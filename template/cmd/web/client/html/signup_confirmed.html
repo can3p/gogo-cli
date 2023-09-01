@@ -1,0 +1,31 @@
+{{ template "header.html" . }}
+
+<div class="uk-container">
+  <h1 class="uk-heading-medium uk-margin-top">Your email got confirmed, thanks!</h1>
+
+  <div class="uk-container uk-padding">
+    <div class="uk-margin-top uk-flex-center uk-grid">
+      <div class="uk-width-1-2@m">
+        <div class="uk-card uk-card-default uk-card-body">
+          <h3 class="uk-card-title">You can log in now</h3>
+          <form method="POST" action="/login">
+            <fieldset class="uk-fieldset">
+              <div class="uk-margin">
+                <input class="uk-input" name="email" type="text" placeholder="email" aria-label="email">
+              </div>
+
+              <div class="uk-margin">
+                <input class="uk-input" name="password" type="password" placeholder="password" aria-label="password">
+              </div>
+            </fieldset>
+            <p uk-margin>
+            <button class="uk-button uk-button-primary">Log in</button>
+            </p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{{ template "footer.html" . }}

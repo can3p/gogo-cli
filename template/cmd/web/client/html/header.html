@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><projectname> - {{ .Name }}</title>
+    <meta property="og:title" content="<projectname> - {{ .Name }}">
+    <meta name="keywords" content="<projectname>">
+    <meta name="description" content="TODO - fill in description">
+    <meta property="og:description" content="TODO - fill in description">
+    <meta property="og:site_name" content="TODO - fill in description">
+    <link rel="canonical" href="TODO - fill in description">
+    <meta property="og:type" content="website">
+    <link rel="stylesheet" href="{{ static_asset "main.css" }}" />
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ static_asset "static/apple-touch-icon.png" }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ static_asset "static/favicon-32x32.png" }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ static_asset "static/favicon-16x16.png" }}">
+    <link rel="manifest" href="/static/static/site.webmanifest">
+    <link rel="prefetch" href="{{ static_asset "controls.js" }}">
+  </head>
+  <body class="uk-height-viewport" hx-boost="true">
+    <nav class="uk-navbar-container uk-navbar" uk-navbar>
+      <div class="uk-container uk-navbar">
+        <div class="uk-navbar-left uk-visible@s">
+          <ul class="uk-navbar-nav">
+            {{ template "header--links.html" toMap "User" .User "Platform" "desktop" }}
+          </ul>
+        </div>
+
+        <div class="uk-navbar-right uk-hidden@s">
+          <a class="uk-navbar-toggle" uk-toggle="target: #sidenav" uk-navbar-toggle-icon></a>
+
+          <div id="sidenav" uk-offcanvas="flip: true" class="uk-offcanvas">
+            <div class="uk-offcanvas-bar">
+              <button class="uk-offcanvas-close" type="button" uk-close></button>
+              <ul class="uk-nav">
+                {{ template "header--links.html" toMap "User" .User "LinkClass" "uk-text-large" "Platform" "mobile" }}
+              </ul>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </nav>

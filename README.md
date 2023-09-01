@@ -42,3 +42,11 @@ gogo generate project bunny
 cd bunny/cmd/web
 make watchexec
 ```
+
+### To Replace in the template
+
+* `<projectname>`
+* `<projectemail>`
+* `<projectrepo>`
+* `<testemailhead>` `john@mail.wat` is split into `john` and `mail.wat`
+* `<testemailtail>`

@@ -1,0 +1,35 @@
+<form class="uk-form-stacked"
+      method="POST"
+      action="{{ link "form_signup" }}"
+      hx-post="{{ link "form_signup" }}"
+      hx-swap="outerHTML"
+      >
+
+  <input type="hidden" name="attribution" value="{{ if .Attribution }}{{ .Attribution }}{{ else if .Input }}{{ if .Input.Attribution }}{{ .Input.Attribution }}{{ end }}{{ end }}" />
+  <fieldset class="uk-fieldset">
+    <div class="uk-margin">
+      <label class="uk-form-label" for="form-stacked-text">Email</label>
+      <div class="uk-form-controls">
+        {{ if and .Errors (ne .Errors.email "") }}
+        <div class="uk-text-meta uk-text-danger">{{ .Errors.email }}</div>
+        {{ end }}
+        <input class="uk-input" name="email" type="email" value="{{ if .Input }}{{ .Input.Email }}{{ end }}">
+      </div>
+    </div>
+
+    <div class="uk-margin">
+      <label class="uk-form-label" for="form-stacked-text">Password</label>
+      <div class="uk-form-controls">
+        {{ if and .Errors (ne .Errors.password "") }}
+        <div class="uk-text-meta uk-text-danger">{{ .Errors.password }}</div>
+        {{ end }}
+        <input class="uk-input" name="password" type="password" value="{{ if .Input }}{{ .Input.Password }}{{ end }}" required pattern=".{8,}">
+        <div class="uk-text-meta">Eight or more characters please</div>
+      </div>
+    </div>
+  </fieldset>
+
+  <div class="uk-margin">
+    <button class="uk-button uk-button-primary">Create account</button>
+  </div>
+</form>

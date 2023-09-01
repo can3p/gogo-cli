@@ -1,0 +1,40 @@
+{{ if .FormSaved }}
+  {{ template "partial--success-message.html" toMap "Message" "Settings have been saved" }}
+{{ end }}
+
+<form class="uk-form-stacked" method="POST"
+  action="{{ link "form_save_settings" }}"
+  hx-post="{{ link "form_save_settings" }}"
+  hx-swap="outerHTML"
+  >
+
+  <div class="uk-margin">
+    <label class="uk-form-label" for="form-stacked-text">Email</label>
+    <div class="uk-form-controls">
+      <input class="uk-input" type="text" value="{{ .User.Email }}" disabled>
+    </div>
+  </div>
+
+  <div class="uk-margin">
+    <label class="uk-form-label" for="form-stacked-text">Submit</label>
+    <div class="uk-form-controls">
+      {{ if and .Errors (ne .Errors.timezone "") }}
+      <div class="uk-text-meta uk-text-danger">{{ .Errors.timezone }}</div>
+      {{ end }}
+      <select class="uk-select" name="timezone">
+        {{ $selected_tz := .User.Timezone }}
+        {{ if (and .Input .Input.Timezone) }}
+          {{ $selected_tz = .Input.Timezone }}
+        {{ end }}
+
+        {{ range tzlist }}
+          <option value="{{ . }}" {{ if eq . $selected_tz }}selected{{ end }}>{{ . }}</option>
+        {{ end }}
+      </select>
+    </div>
+  </div>
+
+  <div class="uk-margin">
+    <button type="submit" class="uk-button uk-button-primary uk-button-large">Save settings</button>
+  </div>
+</form>

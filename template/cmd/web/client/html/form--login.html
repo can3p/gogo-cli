@@ -1,0 +1,24 @@
+<form method="POST"
+      action="{{ link "form_login" }}"
+      hx-post="{{ link "form_login" }}"
+      hx-swap="outerHTML"
+  >
+  <fieldset class="uk-fieldset">
+    <div class="uk-margin">
+      {{ if and .Errors (ne .Errors.email "") }}
+      <div class="uk-text-meta uk-text-danger">{{ .Errors.email }}</div>
+      {{ end }}
+      <input class="uk-input" name="email" type="text" placeholder="email" aria-label="email" value="{{ if .Input }}{{ .Input.Email }}{{ end }}">
+    </div>
+
+    <div class="uk-margin">
+      {{ if and .Errors (ne .Errors.password "") }}
+      <div class="uk-text-meta uk-text-danger">{{ .Errors.password }}</div>
+      {{ end }}
+      <input class="uk-input" name="password" type="password" placeholder="password" aria-label="password" value="{{ if .Input }}{{ .Input.Password }}{{ end }}">
+    </div>
+  </fieldset>
+  <p uk-margin>
+    <button class="uk-button uk-button-primary">Log in</button>
+  </p>
+</form>

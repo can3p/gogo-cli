@@ -1,0 +1,20 @@
+{{ template "header.html" . }}
+
+{{ $user := .User.DBUser }}
+<div class="uk-container">
+  <h1 class="uk-heading-medium">Settings</h1>
+
+  <div class="uk-flex-center uk-grid">
+    <div class="uk-card uk-card-default uk-card-body uk-width-2-3@m">
+      <h3 class="uk-card-title">General</h3>
+      {{ template "form--settings-general.html" toMap "User" $user }}
+    </div>
+
+    <div class="uk-card uk-card-default uk-card-body uk-width-2-3@m uk-margin-top">
+      <h3 class="uk-card-title">Change Password</h3>
+      {{ template "form--settings-change-password.html" . }}
+    </div>
+  </div>
+</div>
+
+{{ template "footer.html" . }}
