@@ -2,26 +2,26 @@
   {{ template "partial--success-message.html" toMap "Message" "Settings have been saved" }}
 {{ end }}
 
-<form class="uk-form-stacked" method="POST"
+<form method="POST"
   action="{{ link "form_save_settings" }}"
   hx-post="{{ link "form_save_settings" }}"
   hx-swap="outerHTML"
   >
 
-  <div class="uk-margin">
-    <label class="uk-form-label" for="form-stacked-text">Email</label>
-    <div class="uk-form-controls">
-      <input class="uk-input" type="text" value="{{ .User.Email }}" disabled>
-    </div>
+  <div class="mb-3">
+    <label for="settingsEmail" class="form-label">Email address</label>
+    <input name="email" type="email"
+                        value="{{ .User.Email }}"
+                        class="form-control"
+                        id="settingsEmail" aria-describedby="emailHelp"
+                                           disabled>
   </div>
 
-  <div class="uk-margin">
-    <label class="uk-form-label" for="form-stacked-text">Submit</label>
-    <div class="uk-form-controls">
-      {{ if and .Errors (ne .Errors.timezone "") }}
-      <div class="uk-text-meta uk-text-danger">{{ .Errors.timezone }}</div>
-      {{ end }}
-      <select class="uk-select" name="timezone">
+  <div class="mb-3">
+    <label for="settingsTimeZone" class="form-label">Time Zone</label>
+    <select name="timezone"
+            class="form-control {{ if (.Errors.HasError "timezone") }}is-invalid{{ end }}"
+            >
         {{ $selected_tz := .User.Timezone }}
         {{ if (and .Input .Input.Timezone) }}
           {{ $selected_tz = .Input.Timezone }}
@@ -30,11 +30,11 @@
         {{ range tzlist }}
           <option value="{{ . }}" {{ if eq . $selected_tz }}selected{{ end }}>{{ . }}</option>
         {{ end }}
-      </select>
-    </div>
+    </select>
+    {{ if (.Errors.HasError "timezone") }}
+    <div class="invalid-feedback">{{ .Errors.timezone }}</div>
+    {{ end }}
   </div>
 
-  <div class="uk-margin">
-    <button type="submit" class="uk-button uk-button-primary uk-button-large">Save settings</button>
-  </div>
+  <button type="submit" class="btn btn-primary">Save Settings</button>
 </form>
