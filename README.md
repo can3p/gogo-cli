@@ -60,8 +60,7 @@ Something like this, let's say we want to create a `bunny` project:
 
 ```
 cd ~/code
-gogo generate project bunny
-# or: gogo generate project bunny --skip-deploy
+gogo-cli generate bunny --email 'your@email.com' --repo 'github.com/can3p/bunny' --testemail 'your@email.com' --out bunny
 cd bunny/cmd/web
 make watchexec
 ```
