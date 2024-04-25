@@ -5,16 +5,20 @@ package cmd
 
 import (
 	"fmt"
-	"log"
+	"io/fs"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
+
+	"github.com/can3p/go-scarf/scaffolder"
+	gogoTemplate "github.com/can3p/gogo-cli/template"
 
 	"github.com/spf13/cobra"
 )
 
 func generateCommand() *cobra.Command {
+	var test bool
+
 	out := &cobra.Command{
 		Use:   "generate <projectname>",
 		Short: "generate a new gogo project",
@@ -41,12 +45,12 @@ func generateCommand() *cobra.Command {
 				return fmt.Errorf("repo arg is required")
 			}
 
-			testemail, err := cmd.Flags().GetString("testemail")
+			testEmail, err := cmd.Flags().GetString("testemail")
 
 			if err != nil {
 				return err
 			}
-			if testemail == "" {
+			if testEmail == "" {
 				return fmt.Errorf("testemail arg is required")
 			}
 
@@ -71,7 +75,27 @@ func generateCommand() *cobra.Command {
 				return err
 			}
 
-			return generateProject(projectName, out, email, repo, testemail)
+			s := scaffolder.New().WithFileFilter(func(s string, d fs.DirEntry) scaffolder.FileFilterResult {
+				if s == "template.go" {
+					return scaffolder.FileFilterSkip
+				}
+
+				return scaffolder.FileFilterAccept
+			})
+
+			if !test {
+				s = s.WithProcessor(scaffolder.FSProcessor(out))
+			}
+
+			testEmailParts := strings.Split(testEmail, "@")
+
+			return s.Scaffold(gogoTemplate.Template, scaffolder.ScaffoldData{
+				"ProjectName":   projectName,
+				"ProjectRepo":   repo,
+				"ProjectEmail":  email,
+				"TestEmailHead": testEmailParts[0],
+				"TestEmailTail": testEmail[1],
+			})
 		},
 	}
 
@@ -79,66 +103,11 @@ func generateCommand() *cobra.Command {
 	out.Flags().String("repo", "", "project repo url like github.com/can3p/gogo-cli for the import names")
 	out.Flags().String("testemail", "", "and address that you would use for testing. Only this address will be allowed to have a + sign for sign ups testing")
 	out.Flags().String("out", "", "project will be generated in this folder if specified")
+	out.Flags().BoolVarP(&test, "test", "", false, "Do not write anything, write everything to stdout")
 
 	return out
 }
 
-func generateProject(projectName, out, email, repo, testemail string) error {
-	targetFolder := out + "/" + projectName
-
-	if err := exec.Command("cp", "-R", "template", targetFolder).Run(); err != nil {
-		return err
-	}
-
-	testemailParts := strings.Split(testemail, "@")
-	from := []string{"projectname", "projectemail", "projectrepo", "testemailhead", "testemailtail"}
-	to := []string{projectName, email, repo, testemailParts[0], testemailParts[1]}
-
-	for idx := range from {
-		field := "<" + from[idx] + ">"
-		val := strings.ReplaceAll(to[idx], "/", "\\/")
-
-		// find . -name '*.go' -exec sed -i 's/<reponame>/<projectrepo>/g' {} \;
-		//args := []string{"find", out, "-type", "f", "-exec", fmt.Sprintf("sed -i 's/%s/%s/g' {}", field, val), ";"}
-		args := []string{"find", out, "-type", "f"}
-		log.Println("sed args:", strings.Join(args, " "))
-		cmd := exec.Command(args[0], args[1:]...)
-
-		if out, err := cmd.Output(); err != nil {
-			return err
-		} else {
-			fnames := strings.Split(string(out), "\n")
-
-			for _, fname := range fnames {
-				if fname == "" {
-					continue
-				}
-
-				args := []string{"sed", "-i", fmt.Sprintf("s/%s/%s/g", field, val), fname}
-				log.Println("sed args:", strings.Join(args, " "))
-				cmd := exec.Command(args[0], args[1:]...)
-				cmd.Stdout = os.Stdout
-				cmd.Stderr = os.Stderr
-				if err := cmd.Run(); err != nil {
-					return err
-				}
-			}
-		}
-	}
-
-	return nil
-}
-
 func init() {
 	rootCmd.AddCommand(generateCommand())
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// generateCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// generateCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

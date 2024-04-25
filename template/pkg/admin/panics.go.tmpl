@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"<projectrepo>/pkg/model/core"
+	"{{ .ProjectRepo }}/pkg/model/core"
 	"github.com/gin-gonic/gin"
 	mailjet "github.com/mailjet/mailjet-apiv3-go/v3"
 )
@@ -39,8 +39,8 @@ func NotifyPageFailure(c *gin.Context, err any, user *core.User) {
 	messagesInfo := []mailjet.InfoMessagesV31{
 		{
 			From: &mailjet.RecipientV31{
-				Email: "<projectemail>",
-				Name:  "Your <projectname>",
+				Email: "{{ .ProjectEmail }}",
+				Name:  "Your {{ .ProjectName }}",
 			},
 			To: &mailjet.RecipientsV31{
 				mailjet.RecipientV31{

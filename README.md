@@ -68,8 +68,8 @@ make watchexec
 
 ### To Replace in the template
 
-* `<projectname>`
-* `<projectemail>`
-* `<projectrepo>`
-* `<testemailhead>` `john@mail.wat` is split into `john` and `mail.wat`
-* `<testemailtail>`
+* `{{ .ProjectName }}`
+* `{{ .ProjectEmail }}`
+* `{{ .ProjectRepo }}`
+* `{{ .TestemailHead }}` `john@mail.wat` is split into `john` and `mail.wat`
+* `{{ .TestemailTail }}`

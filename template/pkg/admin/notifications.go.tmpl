@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"<projectrepo>/pkg/model/core"
+	"{{ .ProjectRepo }}/pkg/model/core"
 	mailjet "github.com/mailjet/mailjet-apiv3-go/v3"
 )
 
@@ -17,15 +17,15 @@ func NotifyNewUser(user *core.User) {
 	messagesInfo := []mailjet.InfoMessagesV31{
 		{
 			From: &mailjet.RecipientV31{
-				Email: "<projectemail>",
-				Name:  "Your <projectname>",
+				Email: "{{ .ProjectEmail }}",
+				Name:  "Your {{ .ProjectName }}",
 			},
 			To: &mailjet.RecipientsV31{
 				mailjet.RecipientV31{
 					Email: NotifyAddress,
 				},
 			},
-			Subject: "New User on <projectname>",
+			Subject: "New User on {{ .ProjectName }}",
 			TextPart: fmt.Sprintf(`
 	Hi!
 
@@ -59,15 +59,15 @@ func NotifySignupConfirmed(user *core.User) {
 	messagesInfo := []mailjet.InfoMessagesV31{
 		{
 			From: &mailjet.RecipientV31{
-				Email: "<projectemail>",
-				Name:  "Your <projectname>",
+				Email: "{{ .ProjectEmail }}",
+				Name:  "Your {{ .ProjectName }}",
 			},
 			To: &mailjet.RecipientsV31{
 				mailjet.RecipientV31{
 					Email: NotifyAddress,
 				},
 			},
-			Subject: "New User confirmed email on <projectname>",
+			Subject: "New User confirmed email on {{ .ProjectName }}",
 			TextPart: fmt.Sprintf(`
 	Hi!
 
@@ -103,15 +103,15 @@ func NotifyThrowAwayEmailSignupAttempt(email string) {
 	messagesInfo := []mailjet.InfoMessagesV31{
 		{
 			From: &mailjet.RecipientV31{
-				Email: "<projectemail>",
-				Name:  "Your <projectname>",
+				Email: "{{ .ProjectEmail }}",
+				Name:  "Your {{ .ProjectName }}",
 			},
 			To: &mailjet.RecipientsV31{
 				mailjet.RecipientV31{
 					Email: NotifyAddress,
 				},
 			},
-			Subject: "An attempt to use a throwaway email domain on <projectname>",
+			Subject: "An attempt to use a throwaway email domain on {{ .ProjectName }}",
 			TextPart: fmt.Sprintf(`
 	Hi!
 

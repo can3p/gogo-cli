@@ -3,8 +3,8 @@ package web
 import (
 	"context"
 
-	"<projectrepo>/pkg/auth"
-	"<projectrepo>/pkg/model/core"
+	"{{ .ProjectRepo }}/pkg/auth"
+	"{{ .ProjectRepo }}/pkg/model/core"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
@@ -12,7 +12,7 @@ func Index(c context.Context, db boil.ContextExecutor, userData *auth.UserData) 
 	systemSettings := core.SystemSettings().OneP(c, db)
 
 	return map[string]interface{}{
-		"Name": "Super cool <projectname>",
+		"Name": "Super cool {{ .ProjectName }}",
 		"User": userData,
 	}
 }

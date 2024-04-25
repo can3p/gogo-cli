@@ -14,7 +14,7 @@ for (split /\n/, $output) {
     $var =~ s/\r//;
 
     if ($varname eq "DATABASE_URL") {
-      $var =~ s/<projectname>db.flycast/localhost/;
+      $var =~ s/{{ .ProjectName }}db.flycast/localhost/;
     }
     print "$var\n";
   }

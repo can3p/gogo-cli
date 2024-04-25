@@ -10,6 +10,7 @@ require (
 
 require (
 	aead.dev/minisign v0.2.0 // indirect
+	github.com/can3p/go-scarf v0.0.0-20240425152400-5164ded31b9d // indirect
 	github.com/fatih/color v1.16.0 // indirect
 	github.com/go-resty/resty/v2 v2.11.0 // indirect
 	github.com/google/go-github/v57 v57.0.0 // indirect

@@ -1,22 +1,22 @@
 ## Steps to clone dabdab.org
 
 1. change remote and push to the new repo
-2. change flytoml to point to the new app <projectname>
-3. create the app on fly `flyctl apps create <projectname>`
-4. create db, set 4gb ram `fly postgres create -n <projectname>db`
-5. attach db to the app `flyctl postgres attach -a <projectname> <projectname>db`
+2. change flytoml to point to the new app {{ .ProjectName }}
+3. create the app on fly `flyctl apps create {{ .ProjectName }}`
+4. create db, set 4gb ram `fly postgres create -n {{ .ProjectName }}db`
+5. attach db to the app `flyctl postgres attach -a {{ .ProjectName }} {{ .ProjectName }}db`
 6. Set secrets:
 
    ```
    flyctl secrets set SESSION_SALT=<random string>
-   flyctl secrets set SITE_ROOT=https://<projectname>.com
+   flyctl secrets set SITE_ROOT=https://{{ .ProjectName }}.com
    flyctl secrets set MJ_APIKEY_PUBLIC=<public key from mailjet>
    flyctl secrets set MJ_APIKEY_PRIVATE=<private key from mailjet>
    ```
 7. Do first deploy `fly deploy`, make sure you can reach the app via <appname>.fly.dev
-8. Create a cert for your custom domain `fly certs add <projectname>.com`
+8. Create a cert for your custom domain `fly certs add {{ .ProjectName }}.com`
 9. After it screams at you, add required A and AAAA records
-10. You might need to run `fly certs check <projectname>.com` a couple of times, `fly certs list` should show your domain with the status `ready`.
+10. You might need to run `fly certs check {{ .ProjectName }}.com` a couple of times, `fly certs list` should show your domain with the status `ready`.
 11. You should be able to reach your app via custom domain at this point
 12. Got to mailjet and add new domain
 13. Add sender email address there

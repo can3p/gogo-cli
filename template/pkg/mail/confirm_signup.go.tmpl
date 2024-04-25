@@ -5,8 +5,8 @@ import (
 	"log"
 	"os"
 
-	"<projectrepo>/pkg/links"
-	"<projectrepo>/pkg/model/core"
+	"{{ .ProjectRepo }}/pkg/links"
+	"{{ .ProjectRepo }}/pkg/model/core"
 	"github.com/jmoiron/sqlx"
 	mailjet "github.com/mailjet/mailjet-apiv3-go/v3"
 	"github.com/pkg/errors"
@@ -25,25 +25,25 @@ func ConfirmSignup(db *sqlx.DB, user *core.User) error {
 	messagesInfo := []mailjet.InfoMessagesV31{
 		{
 			From: &mailjet.RecipientV31{
-				Email: "<projectemail>",
-				Name:  "Your <projectname>",
+				Email: "{{ .ProjectEmail }}",
+				Name:  "Your {{ .ProjectName }}",
 			},
 			To: &mailjet.RecipientsV31{
 				mailjet.RecipientV31{
 					Email: to,
 				},
 			},
-			Subject: "Welcome to <projectname>",
+			Subject: "Welcome to {{ .ProjectName }}",
 			TextPart: fmt.Sprintf(`
 	Hi!
 
-	Thank you for your interest in <projectname>! Please follow the link to confirm your email address
+	Thank you for your interest in {{ .ProjectName }}! Please follow the link to confirm your email address
 
 	%s`, link),
 			HTMLPart: fmt.Sprintf(`
 	<p>Hi!</p>
 
-	<p>Thank you for your interest in <projectname>! Please follow the link to confirm your email address</p>
+	<p>Thank you for your interest in {{ .ProjectName }}! Please follow the link to confirm your email address</p>
 
 	<a href="%s">%s</a>`, link, link),
 		},
