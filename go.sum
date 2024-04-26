@@ -4,6 +4,8 @@ github.com/can3p/go-scarf v0.0.0-20240110163951-2d2faaed9fc4 h1:KrbvtDMtu9QA7Bb4
 github.com/can3p/go-scarf v0.0.0-20240110163951-2d2faaed9fc4/go.mod h1:s9bLq1TjMr4F4iDXlF024F4qraB+djCfTadlfkC4veM=
 github.com/can3p/go-scarf v0.0.0-20240425152400-5164ded31b9d h1:vLP5gr+GeYF5Irdj/GDWuUL6ttwo7rnXgtByJgx4fn8=
 github.com/can3p/go-scarf v0.0.0-20240425152400-5164ded31b9d/go.mod h1:s9bLq1TjMr4F4iDXlF024F4qraB+djCfTadlfkC4veM=
+github.com/can3p/go-scarf v0.0.0-20240426000652-3038a638ab5a h1:m9OP4JfxPaO0qm/o+rvBEZnKNuWberYNKGnKLSav8bc=
+github.com/can3p/go-scarf v0.0.0-20240426000652-3038a638ab5a/go.mod h1:s9bLq1TjMr4F4iDXlF024F4qraB+djCfTadlfkC4veM=
 github.com/can3p/kleiner v0.0.8 h1:N3baa0NeN0v2cht0AIku/5k/mUbq9k/T81mj73Y7j2E=
 github.com/can3p/kleiner v0.0.8/go.mod h1:kwt/Exe3WzOccIe+u0WdZDdu6IwNSeob0ZlyoEoFUnM=
 github.com/cpuguy83/go-md2man/v2 v2.0.3/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
