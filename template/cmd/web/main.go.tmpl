@@ -6,7 +6,6 @@ import (
 	"flag"
 	"fmt"
 	"html/template"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -34,9 +33,6 @@ import (
 )
 
 var staticRoute = "/static"
-
-// replace with cdn domain
-var staticRouteCluster = "/static"
 
 var requiredVars = []string{
 	"DATABASE_URL",
@@ -117,7 +113,7 @@ func main() {
 
 		fname := fmt.Sprintf("client/articles/%s.md", articleName)
 
-		body, err := ioutil.ReadFile((fname))
+		body, err := os.ReadFile((fname))
 
 		if err != nil {
 			panic(err)
@@ -324,7 +320,7 @@ func main() {
 func funcmap() template.FuncMap {
 	return template.FuncMap{
 		"static_asset": func() func(n string) string {
-			manifest, err := ioutil.ReadFile("dist/manifest.json")
+			manifest, err := os.ReadFile("dist/manifest.json")
 
 			if err != nil {
 				panic(err)
