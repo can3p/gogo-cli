@@ -8,25 +8,28 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
-func Index(c context.Context, db boil.ContextExecutor, userData *auth.UserData) map[string]interface{} {
-	systemSettings := core.SystemSettings().OneP(c, db)
+type BasePage struct {
+	ProjectName string
+	Name        string
+	User        *auth.UserData
+}
 
-	return map[string]interface{}{
-		"Name": "Super cool {{ .ProjectName }}",
-		"User": userData,
+func getBasePage(name string, userData *auth.UserData) *BasePage {
+	return &BasePage{
+		Name:        name,
+		User:        userData,
+		ProjectName: "{{ .ProjectName }}",
 	}
 }
 
-func Controls(c context.Context, db boil.ContextExecutor, userData *auth.UserData) map[string]interface{} {
-	return map[string]interface{}{
-		"Name": "Controls",
-		"User": userData,
-	}
+func Index(c context.Context, db boil.ContextExecutor, userData *auth.UserData) *BasePage {
+	return getBasePage("Super cool {{ .ProjectName }}", userData)
 }
 
-func Settings(c context.Context, db boil.ContextExecutor, userData *auth.UserData) map[string]interface{} {
-	return map[string]interface{}{
-		"Name": "Settings",
-		"User": userData,
-	}
+func Controls(c context.Context, db boil.ContextExecutor, userData *auth.UserData) *BasePage {
+	return getBasePage("Controls", userData)
+}
+
+func Settings(c context.Context, db boil.ContextExecutor, userData *auth.UserData) *BasePage {
+	return getBasePage("Settings", userData)
 }
