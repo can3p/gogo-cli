@@ -71,7 +71,7 @@ func NotifyPageFailure(c *gin.Context, err any, user *core.User) {
 	}
 
 	messages := mailjet.MessagesV31{Info: messagesInfo}
-	res, err := mailjetClient.SendMailV31(&messages)
+	_, err = mailjetClient.SendMailV31(&messages)
 
 	if err != nil {
 		log.Fatal(err)

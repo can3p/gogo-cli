@@ -46,7 +46,7 @@ func NotifyNewUser(user *core.User) {
 	}
 
 	messages := mailjet.MessagesV31{Info: messagesInfo}
-	res, err := mailjetClient.SendMailV31(&messages)
+	_, err := mailjetClient.SendMailV31(&messages)
 
 	if err != nil {
 		log.Fatal(err)
@@ -88,9 +88,7 @@ func NotifySignupConfirmed(user *core.User) {
 	}
 
 	messages := mailjet.MessagesV31{Info: messagesInfo}
-	res, err := mailjetClient.SendMailV31(&messages)
-
-	fmt.Println(res)
+	_, err := mailjetClient.SendMailV31(&messages)
 
 	if err != nil {
 		log.Fatal(err)
