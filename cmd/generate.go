@@ -12,6 +12,7 @@ import (
 
 	"github.com/can3p/go-scarf/scaffolder"
 	gogoTemplate "github.com/can3p/gogo-cli/template"
+	"github.com/google/uuid"
 
 	"github.com/spf13/cobra"
 )
@@ -81,7 +82,10 @@ func generateCommand() *cobra.Command {
 				}
 
 				return scaffolder.FileFilterAccept
-			})
+			}).WithFuncMap(map[string]any{
+				"uuid": func() string {
+					return uuid.NewString()
+				}})
 
 			if !test {
 				s = s.WithProcessor(scaffolder.FSProcessor(out))
