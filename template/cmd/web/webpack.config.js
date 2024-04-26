@@ -5,7 +5,6 @@ const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const { WebpackManifestPlugin } = require('webpack-manifest-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
-const MomentLocalesPlugin = require('moment-locales-webpack-plugin');
 
 /**
  * Base webpack configuration
@@ -42,8 +41,6 @@ module.exports = (env, argv) => {
 
     // plugins configurations
     plugins: [
-      // To strip all locales except “en”
-      new MomentLocalesPlugin(),
       // save compiled SCSS into separated CSS file
       new MiniCssExtractPlugin({
         filename: isProduction ? "css/style.[contenthash].css" : "css/style.css"
