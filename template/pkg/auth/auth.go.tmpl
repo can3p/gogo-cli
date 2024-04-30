@@ -9,7 +9,7 @@ import (
 	"{{ .ProjectRepo }}/pkg/admin"
 	"{{ .ProjectRepo }}/pkg/model/core"
 	"{{ .ProjectRepo }}/pkg/pgsession"
-	"{{ .ProjectRepo }}/pkg/util"
+	"github.com/can3p/gogo/util/transact"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -151,7 +151,7 @@ func Signup(ctx context.Context, db *sqlx.DB, email string, password string, att
 		SignupAttribution: null.NewString(attribution, attribution != ""),
 	}
 
-	err := util.Transact(db, func(tx *sql.Tx) error {
+	err := transact.Transact(db, func(tx *sql.Tx) error {
 
 		if err := u.Insert(ctx, tx, boil.Infer()); err != nil {
 			return err
