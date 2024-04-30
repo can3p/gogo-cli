@@ -3,6 +3,8 @@ package forms
 import (
 	"context"
 	"fmt"
+
+	"github.com/can3p/gogo/forms"
 	"{{ .ProjectRepo }}/pkg/model/core"
 	"{{ .ProjectRepo }}/pkg/util"
 	"github.com/gin-gonic/gin"
@@ -15,13 +17,13 @@ type SettingsGeneralFormInput struct {
 }
 
 type SettingsGeneralForm struct {
-	*FormBase[SettingsGeneralFormInput]
+	*forms.FormBase[SettingsGeneralFormInput]
 	User *core.User
 }
 
-func SettingsGeneralFormNew(u *core.User) Form {
-	var form Form = &SettingsGeneralForm{
-		FormBase: &FormBase[SettingsGeneralFormInput]{
+func SettingsGeneralFormNew(u *core.User) forms.Form {
+	var form forms.Form = &SettingsGeneralForm{
+		FormBase: &forms.FormBase[SettingsGeneralFormInput]{
 			Name:                "settings_general",
 			FormTemplate:        "form--settings-general.html",
 			KeepValuesAfterSave: true,
@@ -39,7 +41,7 @@ func SettingsGeneralFormNew(u *core.User) Form {
 func (f *SettingsGeneralForm) Validate(c *gin.Context, db boil.ContextExecutor) error {
 	if f.Input.Timezone == "" {
 		f.AddError("timezone", "timezone is required")
-		return ErrValidationFailed
+		return forms.ErrValidationFailed
 	}
 
 	found := false
@@ -52,20 +54,20 @@ func (f *SettingsGeneralForm) Validate(c *gin.Context, db boil.ContextExecutor) 
 
 	if !found {
 		f.AddError("timezone", fmt.Sprintf("Cannot find the timezone [%s]", f.Input.Timezone))
-		return ErrValidationFailed
+		return forms.ErrValidationFailed
 	}
 
 	return nil
 }
 
-func (f *SettingsGeneralForm) Save(c context.Context, exec boil.ContextExecutor) error {
+func (f *SettingsGeneralForm) Save(c context.Context, exec boil.ContextExecutor) (forms.FormSaveAction, error) {
 	f.User.Timezone = f.Input.Timezone
 
 	if _, err := f.User.Update(c, exec, boil.Whitelist(
 		core.UserColumns.Timezone,
 		core.UserColumns.UpdatedAt,
 	)); err != nil {
-		return errors.Wrapf(err, "failed to save to the db")
+		return nil, errors.Wrapf(err, "failed to save to the db")
 	}
 
 	return f.FormBase.Save(c, exec)

@@ -13,6 +13,7 @@ import (
 	"time"
 	_ "time/tzdata" // help go learn about timezones
 
+	gogoForms "github.com/can3p/gogo/forms"
 	"{{ .ProjectRepo }}/pkg/admin"
 	"{{ .ProjectRepo }}/pkg/auth"
 	"{{ .ProjectRepo }}/pkg/forms"
@@ -342,7 +343,7 @@ func main() {
 
 		form := forms.SettingsGeneralFormNew(dbUser)
 
-		forms.DefaultHandler(c, db, form)
+		gogoForms.DefaultHandler(c, db, form)
 	})
 
 	controls.POST("/form/change_password", func(c *gin.Context) {
@@ -351,7 +352,7 @@ func main() {
 
 		form := forms.ChangePasswordFormNew(dbUser)
 
-		forms.DefaultHandler(c, db, form)
+		gogoForms.DefaultHandler(c, db, form)
 	})
 
 	if err := r.Run(); err != nil {
