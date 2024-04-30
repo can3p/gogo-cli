@@ -7,11 +7,10 @@ import (
 
 	"{{ .ProjectRepo }}/pkg/links"
 	"{{ .ProjectRepo }}/pkg/model/core"
-	"github.com/jmoiron/sqlx"
 	mailjet "github.com/mailjet/mailjet-apiv3-go/v3"
 	"github.com/pkg/errors"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
-
 
 func ConfirmSignup(db boil.ContextExecutor, user *core.User) error {
 	mailjetClient := mailjet.NewMailjetClient(os.Getenv("MJ_APIKEY_PUBLIC"), os.Getenv("MJ_APIKEY_PRIVATE"))
