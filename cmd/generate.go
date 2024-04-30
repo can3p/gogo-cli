@@ -98,7 +98,7 @@ func generateCommand() *cobra.Command {
 				"ProjectRepo":   repo,
 				"ProjectEmail":  email,
 				"TestEmailHead": testEmailParts[0],
-				"TestEmailTail": testEmail[1],
+				"TestEmailTail": testEmailParts[1],
 			})
 		},
 	}
