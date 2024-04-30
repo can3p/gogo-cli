@@ -177,114 +177,6 @@ func main() {
 		})
 	})
 
-	r.POST("/form/signup", func(c *gin.Context) {
-		var input struct {
-			Email       string `form:"email" binding:"required"`
-			Password    string `form:"password" binding:"required"`
-			Attribution string `form:"attribution"`
-		}
-
-		if err := c.ShouldBind(&input); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"explanation": "Failed to process request", "err": err.Error()})
-			return
-		}
-
-		systemSettings := core.SystemSettings().OneP(c, db)
-
-		if !systemSettings.RegistrationOpen {
-			c.Status(http.StatusForbidden)
-			return
-		}
-
-		errors := map[string]string{}
-		hasErrors := false
-
-		email := strings.TrimSpace(strings.ToLower(input.Email))
-
-		if email == "" {
-			errors["email"] = "This email cannot be empty"
-			hasErrors = true
-		} else if reason, isOK := web.EmailOKToSignup(c, db, input.Email); !isOK {
-			errors["email"] = reason
-			hasErrors = true
-		}
-
-		if err := validation.ValidatePassword(input.Password); err != nil {
-			errors["password"] = err.Error()
-			hasErrors = true
-		}
-
-		if hasErrors {
-			c.HTML(http.StatusOK, "form--signup.html", map[string]interface{}{
-				"Errors": errors,
-				"Input":  input,
-			})
-			return
-		}
-
-		attribution := input.Attribution
-
-		// we're not enforcing a specific enum of attributions
-		// since it's just additional work at the moment
-		if !web.AttributionRE.MatchString(attribution) {
-			attribution = "unknown"
-		}
-
-		if len(attribution) > 100 {
-			attribution = attribution[0:100]
-		}
-
-		// we're getting the input from the form and not
-		if len(attribution) > 100 {
-			attribution = attribution[0:100]
-		}
-
-		user, err := auth.Signup(c, db, email, input.Password, attribution)
-
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"explanation": "Failed to sign up", "err": err.Error()})
-			return
-		}
-
-		if err := mail.ConfirmSignup(db, user); err != nil {
-			panic(err)
-		}
-
-		c.HTML(http.StatusOK, "partial--signup-goto-email.html", map[string]interface{}{})
-	})
-
-	r.POST("/login", func(c *gin.Context) {
-		var input struct {
-			Email    string `form:"email" binding:"required"`
-			Password string `form:"password" binding:"required"`
-		}
-
-		if err := c.ShouldBind(&input); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"explanation": "Failed to process request", "err": err.Error()})
-			return
-		}
-
-		errors := map[string]string{}
-		hasErrors := false
-
-		if err := auth.Login(c, db, input.Email, input.Password); err != nil {
-			errors["email"] = fmt.Sprintf("Failed to login: %v", err)
-			hasErrors = true
-		}
-
-		if hasErrors {
-			c.HTML(http.StatusOK, "form--login.html", map[string]interface{}{
-				"Errors": errors,
-				"Input":  input,
-			})
-			return
-		}
-
-		// needs for htmx redirect
-		c.Header("HX-Redirect", "/controls/")
-		c.Status(http.StatusOK)
-	})
-
 	r.GET("/logout", auth.Logout)
 
 	controls := r.Group("/controls", auth.EnforceAuth)
@@ -335,6 +227,39 @@ func main() {
 		c.HTML(http.StatusOK, "signup_confirmed.html", map[string]interface{}{
 			"User": userData,
 		})
+	})
+
+	r.POST("/form/login", func(c *gin.Context) {
+		userData := auth.GetUserData(c)
+
+		if userData.IsLoggedIn {
+			c.Redirect(http.StatusFound, "/controls")
+		}
+
+		form := forms.LoginFormNew()
+
+		gogoForms.DefaultHandler(c, db, form)
+	})
+
+	r.POST("/form/signup", func(c *gin.Context) {
+		userData := auth.GetUserData(c)
+
+		if userData.IsLoggedIn {
+			c.Redirect(http.StatusFound, "/controls")
+		}
+
+		systemSettings := core.SystemSettings().OneP(c, db)
+
+		registrationOpen := systemSettings.RegistrationOpen || forceOpenRegistation
+
+		if !registrationOpen {
+			c.Status(http.StatusForbidden)
+			return
+		}
+
+		form := forms.SignupFormNew()
+
+		gogoForms.DefaultHandler(c, db, form)
 	})
 
 	controls.POST("/form/save_settings", func(c *gin.Context) {

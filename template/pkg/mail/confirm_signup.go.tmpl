@@ -12,7 +12,8 @@ import (
 	"github.com/pkg/errors"
 )
 
-func ConfirmSignup(db *sqlx.DB, user *core.User) error {
+
+func ConfirmSignup(db boil.ContextExecutor, user *core.User) error {
 	mailjetClient := mailjet.NewMailjetClient(os.Getenv("MJ_APIKEY_PUBLIC"), os.Getenv("MJ_APIKEY_PRIVATE"))
 
 	if user.EmailConfirmSeed.String == "" {
@@ -25,25 +26,25 @@ func ConfirmSignup(db *sqlx.DB, user *core.User) error {
 	messagesInfo := []mailjet.InfoMessagesV31{
 		{
 			From: &mailjet.RecipientV31{
-				Email: "{{ .ProjectEmail }}",
-				Name:  "Your {{ .ProjectName }}",
+				Email: "dpetroff@gmail.com",
+				Name:  "Your testproj",
 			},
 			To: &mailjet.RecipientsV31{
 				mailjet.RecipientV31{
 					Email: to,
 				},
 			},
-			Subject: "Welcome to {{ .ProjectName }}",
+			Subject: "Welcome to testproj",
 			TextPart: fmt.Sprintf(`
 	Hi!
 
-	Thank you for your interest in {{ .ProjectName }}! Please follow the link to confirm your email address
+	Thank you for your interest in testproj! Please follow the link to confirm your email address
 
 	%s`, link),
 			HTMLPart: fmt.Sprintf(`
 	<p>Hi!</p>
 
-	<p>Thank you for your interest in {{ .ProjectName }}! Please follow the link to confirm your email address</p>
+	<p>Thank you for your interest in testproj! Please follow the link to confirm your email address</p>
 
 	<a href="%s">%s</a>`, link, link),
 		},
