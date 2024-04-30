@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/can3p/gogo/forms"
+	"github.com/can3p/gogo/sender"
 	"{{ .ProjectRepo }}/pkg/auth"
 	"{{ .ProjectRepo }}/pkg/forms/validation"
 	"{{ .ProjectRepo }}/pkg/mail"
@@ -22,15 +23,17 @@ type SignupFormInput struct {
 
 type SignupForm struct {
 	*forms.FormBase[SignupFormInput]
+	Sender sender.Sender
 }
 
-func SignupFormNew() forms.Form {
+func SignupFormNew(sender sender.Sender) forms.Form {
 	var form forms.Form = &SignupForm{
 		FormBase: &forms.FormBase[SignupFormInput]{
 			Name:         "signup",
 			FormTemplate: "form--signup.html",
 			Input:        &SignupFormInput{},
 		},
+		Sender: sender,
 	}
 
 	return form
@@ -41,7 +44,7 @@ func (f *SignupForm) Validate(c *gin.Context, db boil.ContextExecutor) error {
 
 	if f.Input.Email == "" {
 		f.AddError("email", "email is required")
-	} else if reason, isOK := web.EmailOKToSignup(c, db, email); !isOK {
+	} else if reason, isOK := web.EmailOKToSignup(c, db, f.Sender, email); !isOK {
 		f.AddError("email", reason)
 	}
 
@@ -73,13 +76,13 @@ func (f *SignupForm) Save(c context.Context, exec boil.ContextExecutor) (forms.F
 		attribution = attribution[0:100]
 	}
 
-	user, err := auth.Signup(c, exec, email, f.Input.Password, attribution)
+	user, err := auth.Signup(c, exec, f.Sender, email, f.Input.Password, attribution)
 
 	if err != nil {
 		return nil, err
 	}
 
-	if err := mail.ConfirmSignup(exec, user); err != nil {
+	if err := mail.ConfirmSignup(c, f.Sender, user); err != nil {
 		panic(err)
 	}
 

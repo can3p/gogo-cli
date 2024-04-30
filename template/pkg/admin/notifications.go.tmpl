@@ -1,39 +1,37 @@
 package admin
 
 import (
+	"context"
 	"fmt"
 	"log"
-	"os"
+	"net/mail"
 
+	"github.com/can3p/gogo/sender"
 	"{{ .ProjectRepo }}/pkg/model/core"
-	mailjet "github.com/mailjet/mailjet-apiv3-go/v3"
 )
 
 var NotifyAddress string = "{{ .ProjectEmail }}"
 
-func NotifyNewUser(user *core.User) {
-	mailjetClient := mailjet.NewMailjetClient(os.Getenv("MJ_APIKEY_PUBLIC"), os.Getenv("MJ_APIKEY_PRIVATE"))
-
-	messagesInfo := []mailjet.InfoMessagesV31{
-		{
-			From: &mailjet.RecipientV31{
-				Email: "{{ .ProjectEmail }}",
-				Name:  "Your {{ .ProjectName }}",
+func NotifyNewUser(ctx context.Context, s sender.Sender, user *core.User) {
+	mail := &sender.Mail{
+		From: mail.Address{
+			Address: "dpetroff@gmail.com",
+			Name:    "Your testproj",
+		},
+		To: []mail.Address{
+			{
+				Address: NotifyAddress,
 			},
-			To: &mailjet.RecipientsV31{
-				mailjet.RecipientV31{
-					Email: NotifyAddress,
-				},
-			},
-			Subject: "New User on {{ .ProjectName }}",
-			TextPart: fmt.Sprintf(`
+		},
+		Subject: "New User on testproj",
+		Text: fmt.Sprintf(`
 	Hi!
 
 	New user alert:
 
 	* ID: %s
 	* Email: %s`, user.ID, user.Email),
-			HTMLPart: fmt.Sprintf(`
+		Html: fmt.Sprintf(`
 	<p>Hi!</p>
 
 	<p>New user alert:</p>
@@ -42,40 +40,35 @@ func NotifyNewUser(user *core.User) {
 		<li>ID: %s</li>
 		<li>Email: %s</li>
 	</ul>`, user.ID, user.Email),
-		},
 	}
 
-	messages := mailjet.MessagesV31{Info: messagesInfo}
-	_, err := mailjetClient.SendMailV31(&messages)
+	err := s.Send(ctx, mail)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-func NotifySignupConfirmed(user *core.User) {
-	mailjetClient := mailjet.NewMailjetClient(os.Getenv("MJ_APIKEY_PUBLIC"), os.Getenv("MJ_APIKEY_PRIVATE"))
-
-	messagesInfo := []mailjet.InfoMessagesV31{
-		{
-			From: &mailjet.RecipientV31{
-				Email: "{{ .ProjectEmail }}",
-				Name:  "Your {{ .ProjectName }}",
+func NotifySignupConfirmed(ctx context.Context, s sender.Sender, user *core.User) {
+	mail := &sender.Mail{
+		From: mail.Address{
+			Address: "dpetroff@gmail.com",
+			Name:    "Your testproj",
+		},
+		To: []mail.Address{
+			{
+				Address: NotifyAddress,
 			},
-			To: &mailjet.RecipientsV31{
-				mailjet.RecipientV31{
-					Email: NotifyAddress,
-				},
-			},
-			Subject: "New User confirmed email on {{ .ProjectName }}",
-			TextPart: fmt.Sprintf(`
+		},
+		Subject: "New User confirmed email on testproj",
+		Text: fmt.Sprintf(`
 	Hi!
 
 	New conrirmed user alert:
 
 	* ID: %s
 	* Email: %s`, user.ID, user.Email),
-			HTMLPart: fmt.Sprintf(`
+		Html: fmt.Sprintf(`
 	<p>Hi!</p>
 
 	<p>New conrirmed user alert:</p>
@@ -84,46 +77,39 @@ func NotifySignupConfirmed(user *core.User) {
 		<li>ID: %s</li>
 		<li>Email: %s</li>
 	</ul>`, user.ID, user.Email),
-		},
 	}
 
-	messages := mailjet.MessagesV31{Info: messagesInfo}
-	_, err := mailjetClient.SendMailV31(&messages)
+	err := s.Send(ctx, mail)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-func NotifyThrowAwayEmailSignupAttempt(email string) {
-	mailjetClient := mailjet.NewMailjetClient(os.Getenv("MJ_APIKEY_PUBLIC"), os.Getenv("MJ_APIKEY_PRIVATE"))
-
-	messagesInfo := []mailjet.InfoMessagesV31{
-		{
-			From: &mailjet.RecipientV31{
-				Email: "{{ .ProjectEmail }}",
-				Name:  "Your {{ .ProjectName }}",
+func NotifyThrowAwayEmailSignupAttempt(ctx context.Context, s sender.Sender, email string) {
+	mail := &sender.Mail{
+		From: mail.Address{
+			Address: "dpetroff@gmail.com",
+			Name:    "Your testproj",
+		},
+		To: []mail.Address{
+			{
+				Address: NotifyAddress,
 			},
-			To: &mailjet.RecipientsV31{
-				mailjet.RecipientV31{
-					Email: NotifyAddress,
-				},
-			},
-			Subject: "An attempt to use a throwaway email domain on {{ .ProjectName }}",
-			TextPart: fmt.Sprintf(`
+		},
+		Subject: "An attempt to use a throwaway email domain on testproj",
+		Text: fmt.Sprintf(`
 	Hi!
 
 	A user has just tried to use a throwaway email: %s`, email),
-			HTMLPart: fmt.Sprintf(`
+		Html: fmt.Sprintf(`
 	<p>Hi!</p>
 
 	<p>A user has just tried to use a throwaway email: %s</p>
 	`, email),
-		},
 	}
 
-	messages := mailjet.MessagesV31{Info: messagesInfo}
-	_, err := mailjetClient.SendMailV31(&messages)
+	err := s.Send(ctx, mail)
 
 	if err != nil {
 		log.Fatal(err)

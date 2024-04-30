@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	disposable "github.com/can3p/anti-disposable-email"
+	"github.com/can3p/gogo/sender"
 	"{{ .ProjectRepo }}/pkg/admin"
 	"{{ .ProjectRepo }}/pkg/model/core"
 	"github.com/volatiletech/sqlboiler/v4/boil"
@@ -15,7 +16,7 @@ var EmailRE *regexp.Regexp = regexp.MustCompile(`(?P<name>[a-zA-Z0-9.!#$%&'*+/=?
 var TestEmailRE *regexp.Regexp = regexp.MustCompile(`{{ .TestEmailHead }}(\+[^@]+)?@{{ .TestEmailTail }}`)
 var AttributionRE *regexp.Regexp = regexp.MustCompile(`[a-z_]+`)
 
-func EmailOKToSignup(ctx context.Context, db boil.ContextExecutor, address string) (string, bool) {
+func EmailOKToSignup(ctx context.Context, db boil.ContextExecutor, sender sender.Sender, address string) (string, bool) {
 	if !EmailRE.MatchString(address) {
 		return "Invalid email", false
 	}
@@ -31,7 +32,7 @@ func EmailOKToSignup(ctx context.Context, db boil.ContextExecutor, address strin
 	parsedEmail, _ := disposable.ParseEmail(address)
 
 	if parsedEmail.Disposable {
-		go admin.NotifyThrowAwayEmailSignupAttempt(address)
+		go admin.NotifyThrowAwayEmailSignupAttempt(ctx, sender, address)
 
 		return "Email domain is not allowed, please reach out to us via the support form", false
 	}

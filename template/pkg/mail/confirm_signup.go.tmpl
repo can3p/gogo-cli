@@ -1,20 +1,18 @@
 package mail
 
 import (
+	"context"
 	"fmt"
 	"log"
-	"os"
+	"net/mail"
 
+	"github.com/can3p/gogo/sender"
 	"{{ .ProjectRepo }}/pkg/links"
 	"{{ .ProjectRepo }}/pkg/model/core"
-	mailjet "github.com/mailjet/mailjet-apiv3-go/v3"
 	"github.com/pkg/errors"
-	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
-func ConfirmSignup(db boil.ContextExecutor, user *core.User) error {
-	mailjetClient := mailjet.NewMailjetClient(os.Getenv("MJ_APIKEY_PUBLIC"), os.Getenv("MJ_APIKEY_PRIVATE"))
-
+func ConfirmSignup(ctx context.Context, s sender.Sender, user *core.User) error {
 	if user.EmailConfirmSeed.String == "" {
 		return errors.Errorf("cannot send confirm email for user with empty confirmation seed, user id = %s", user.ID)
 	}
@@ -22,35 +20,32 @@ func ConfirmSignup(db boil.ContextExecutor, user *core.User) error {
 	link := links.AbsLink("confirm_signup", user.EmailConfirmSeed.String)
 	to := user.Email
 
-	messagesInfo := []mailjet.InfoMessagesV31{
-		{
-			From: &mailjet.RecipientV31{
-				Email: "dpetroff@gmail.com",
-				Name:  "Your testproj",
+	mail := &sender.Mail{
+		From: mail.Address{
+			Address: "dpetroff@gmail.com",
+			Name:    "Your testproj",
+		},
+		To: []mail.Address{
+			{
+				Address: to,
 			},
-			To: &mailjet.RecipientsV31{
-				mailjet.RecipientV31{
-					Email: to,
-				},
-			},
-			Subject: "Welcome to testproj",
-			TextPart: fmt.Sprintf(`
+		},
+		Subject: "Welcome to testproj",
+		Text: fmt.Sprintf(`
 	Hi!
 
 	Thank you for your interest in testproj! Please follow the link to confirm your email address
 
 	%s`, link),
-			HTMLPart: fmt.Sprintf(`
+		Html: fmt.Sprintf(`
 	<p>Hi!</p>
 
 	<p>Thank you for your interest in testproj! Please follow the link to confirm your email address</p>
 
 	<a href="%s">%s</a>`, link, link),
-		},
 	}
 
-	messages := mailjet.MessagesV31{Info: messagesInfo}
-	_, err := mailjetClient.SendMailV31(&messages)
+	err := s.Send(ctx, mail)
 
 	if err != nil {
 		log.Fatal(err)

@@ -14,6 +14,9 @@ import (
 	_ "time/tzdata" // help go learn about timezones
 
 	gogoForms "github.com/can3p/gogo/forms"
+	"github.com/can3p/gogo/sender"
+	"github.com/can3p/gogo/sender/console"
+	"github.com/can3p/gogo/sender/mailjet"
 	"{{ .ProjectRepo }}/pkg/admin"
 	"{{ .ProjectRepo }}/pkg/auth"
 	"{{ .ProjectRepo }}/pkg/forms"
@@ -37,12 +40,10 @@ var staticRoute = "/static"
 var requiredVars = []string{
 	"DATABASE_URL",
 	"SESSION_SALT",
-	"MJ_APIKEY_PRIVATE",
-	"MJ_APIKEY_PUBLIC",
 	"SITE_ROOT",
 }
 
-func enforceEnvVars() {
+func enforceEnvVars(requiredVars []string) {
 	for _, v := range requiredVars {
 		if _, ok := os.LookupEnv(v); !ok {
 			panic(fmt.Sprintf("var %s is not set", v))
@@ -51,17 +52,32 @@ func enforceEnvVars() {
 }
 
 func main() {
-	enforceEnvVars()
-
 	var forceOpenRegistation bool
+	var forceRealSender bool
 
 	flag.BoolVar(&forceOpenRegistation, "force-signup", false, "allow new signups even if it's disabled in system settings")
+	flag.BoolVar(&forceRealSender, "force-real-sender", false, "force real sender outside of cluster")
 
 	flag.Parse()
+
+	shouldUseRealSender := util.InCluster() || forceRealSender
+
+	enforceEnvVars(requiredVars)
+	if shouldUseRealSender {
+		enforceEnvVars(mailjet.RequiredEnv)
+	}
 
 	// fly.io does not have sslmode enabled
 	db := sqlx.MustConnect("postgres", os.Getenv("DATABASE_URL"))
 	defer db.Close()
+
+	var sender sender.Sender
+
+	if shouldUseRealSender {
+		sender = mailjet.NewSender()
+	} else {
+		sender = console.NewSender()
+	}
 
 	sessionSalt := os.Getenv("SESSION_SALT")
 
@@ -80,7 +96,7 @@ func main() {
 			userData := auth.GetUserData(c)
 			user := userData.DBUser
 
-			admin.NotifyPageFailure(c, err, user)
+			admin.NotifyPageFailure(c, sender, err, user)
 		}))
 	} else {
 		log.Println("Custom error reporter skipped")
@@ -219,7 +235,7 @@ func main() {
 			user.EmailConfirmedAt = null.TimeFrom(time.Now())
 			user.UpdateP(c, db, boil.Infer())
 
-			go admin.NotifySignupConfirmed(user)
+			go admin.NotifySignupConfirmed(c, sender, user)
 		}
 
 		c.HTML(http.StatusOK, "signup_confirmed.html", map[string]interface{}{
@@ -255,7 +271,7 @@ func main() {
 			return
 		}
 
-		form := forms.SignupFormNew()
+		form := forms.SignupFormNew(sender)
 
 		gogoForms.DefaultHandler(c, db, form)
 	})
