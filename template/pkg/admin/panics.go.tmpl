@@ -36,8 +36,8 @@ func NotifyPageFailure(c *gin.Context, s sender.Sender, err any, user *core.User
 
 	mail := &sender.Mail{
 		From: mail.Address{
-			Address: "dpetroff@gmail.com",
-			Name:    "Your testproj",
+			Address: "{{ .ProjectEmail }}",
+			Name:    "Your {{ .ProjectName }}",
 		},
 		To: []mail.Address{
 			{

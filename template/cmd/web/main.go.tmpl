@@ -130,6 +130,31 @@ func main() {
 		r.Group("/static").Static("/", "dist")
 	}
 
+	r.GET("/invite/:id", func(c *gin.Context) {
+		invitationID := c.Param("id")
+
+		userData := auth.GetUserData(c)
+
+		if userData.IsLoggedIn {
+			c.Redirect(http.StatusFound, "/controls")
+			return
+		}
+
+		invite, err := core.UserInvitations(
+			core.UserInvitationWhere.ID.EQ(invitationID),
+			core.UserInvitationWhere.CreatedUserID.IsNull(),
+		).One(c, db)
+
+		if err == sql.ErrNoRows {
+			c.AbortWithStatus(http.StatusNotFound)
+			return
+		} else if err != nil {
+			panic(err)
+		}
+
+		c.HTML(http.StatusOK, "invite.html", web.Invite(c, db, invite, &userData))
+	})
+
 	r.GET("/articles/:id", func(c *gin.Context) {
 		articleName := c.Param("id")
 
@@ -255,6 +280,25 @@ func main() {
 		gogoForms.DefaultHandler(c, db, form)
 	})
 
+	r.POST("/form/accept_invite/:id", func(c *gin.Context) {
+		invitationID := c.Param("id")
+
+		invite, err := core.UserInvitations(
+			core.UserInvitationWhere.ID.EQ(invitationID),
+			core.UserInvitationWhere.CreatedUserID.IsNull(),
+		).One(c, db)
+
+		if err == sql.ErrNoRows {
+			c.AbortWithStatus(http.StatusNotFound)
+			return
+		} else if err != nil {
+			panic(err)
+		}
+
+		form := forms.AcceptInviteFormNew(sender, invite)
+		gogoForms.DefaultHandler(c, db, form)
+	})
+
 	r.POST("/form/signup", func(c *gin.Context) {
 		userData := auth.GetUserData(c)
 
@@ -272,6 +316,15 @@ func main() {
 		}
 
 		form := forms.SignupFormNew(sender)
+
+		gogoForms.DefaultHandler(c, db, form)
+	})
+
+	controls.POST("/form/send_invite", func(c *gin.Context) {
+		userData := auth.GetUserData(c)
+		dbUser := userData.DBUser
+
+		form := forms.SendInviteFormNew(sender, dbUser)
 
 		gogoForms.DefaultHandler(c, db, form)
 	})

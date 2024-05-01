@@ -25,12 +25,12 @@ func Link(name string, args ...string) string {
 		out = "/invite/" + builder.Shift()
 	case "use_case":
 		out = "/use-case/" + builder.Shift()
-	case "form_accept_invite":
-		out = "/invite/" + builder.Shift()
 	case "form_signup_waiting_list":
 		out = "/form/signup_waiting_list"
 	case "form_signup":
 		out = "/form/signup"
+	case "form_accept_invite":
+		out = "/form/accept_invite/" + builder.Shift()
 	case "form_login":
 		out = "/form/login"
 	case "confirm_waiting_list":

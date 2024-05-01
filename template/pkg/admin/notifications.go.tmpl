@@ -15,15 +15,15 @@ var NotifyAddress string = "{{ .ProjectEmail }}"
 func NotifyNewUser(ctx context.Context, s sender.Sender, user *core.User) {
 	mail := &sender.Mail{
 		From: mail.Address{
-			Address: "dpetroff@gmail.com",
-			Name:    "Your testproj",
+			Address: "{{ .ProjectEmail }}",
+			Name:    "Your {{ .ProjectName }}",
 		},
 		To: []mail.Address{
 			{
 				Address: NotifyAddress,
 			},
 		},
-		Subject: "New User on testproj",
+		Subject: "New User on {{ .ProjectName }}",
 		Text: fmt.Sprintf(`
 	Hi!
 
@@ -52,15 +52,15 @@ func NotifyNewUser(ctx context.Context, s sender.Sender, user *core.User) {
 func NotifySignupConfirmed(ctx context.Context, s sender.Sender, user *core.User) {
 	mail := &sender.Mail{
 		From: mail.Address{
-			Address: "dpetroff@gmail.com",
-			Name:    "Your testproj",
+			Address: "{{ .ProjectEmail }}",
+			Name:    "Your {{ .ProjectName }}",
 		},
 		To: []mail.Address{
 			{
 				Address: NotifyAddress,
 			},
 		},
-		Subject: "New User confirmed email on testproj",
+		Subject: "New User confirmed email on {{ .ProjectName }}",
 		Text: fmt.Sprintf(`
 	Hi!
 
@@ -89,15 +89,15 @@ func NotifySignupConfirmed(ctx context.Context, s sender.Sender, user *core.User
 func NotifyThrowAwayEmailSignupAttempt(ctx context.Context, s sender.Sender, email string) {
 	mail := &sender.Mail{
 		From: mail.Address{
-			Address: "dpetroff@gmail.com",
-			Name:    "Your testproj",
+			Address: "{{ .ProjectEmail }}",
+			Name:    "Your {{ .ProjectName }}",
 		},
 		To: []mail.Address{
 			{
 				Address: NotifyAddress,
 			},
 		},
-		Subject: "An attempt to use a throwaway email domain on testproj",
+		Subject: "An attempt to use a throwaway email domain on {{ .ProjectName }}",
 		Text: fmt.Sprintf(`
 	Hi!
 

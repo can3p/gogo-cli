@@ -22,25 +22,25 @@ func ConfirmSignup(ctx context.Context, s sender.Sender, user *core.User) error 
 
 	mail := &sender.Mail{
 		From: mail.Address{
-			Address: "dpetroff@gmail.com",
-			Name:    "Your testproj",
+			Address: "{{ .ProjectEmail }}",
+			Name:    "Your {{ .ProjectName }}",
 		},
 		To: []mail.Address{
 			{
 				Address: to,
 			},
 		},
-		Subject: "Welcome to testproj",
+		Subject: "Welcome to {{ .ProjectName }}",
 		Text: fmt.Sprintf(`
 	Hi!
 
-	Thank you for your interest in testproj! Please follow the link to confirm your email address
+	Thank you for your interest in {{ .ProjectName }}! Please follow the link to confirm your email address
 
 	%s`, link),
 		Html: fmt.Sprintf(`
 	<p>Hi!</p>
 
-	<p>Thank you for your interest in testproj! Please follow the link to confirm your email address</p>
+	<p>Thank you for your interest in {{ .ProjectName }}! Please follow the link to confirm your email address</p>
 
 	<a href="%s">%s</a>`, link, link),
 	}
