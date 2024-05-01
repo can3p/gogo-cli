@@ -54,15 +54,19 @@ extract the binary into a folder that is mentioned in your `$PATH` variable.
 
 ## Usage
 
-TBD
-
-Something like this, let's say we want to create a `bunny` project:
+Let's say we want to create a `bunny` project:
 
 ```
 cd ~/code
 gogo-cli generate bunny --email 'your@email.com' --repo 'github.com/can3p/bunny' --testemail 'your@email.com' --out bunny
+echo "SESSION_SALT=random_string" >> bunny/cmd/web/.env
+echo "SITE_ROOT=http://localhost:8080" >> bunny/cmd/web/.env
+echo "DATABASE_URL=<insert your postgres connection string there>" >> bunny/cmd/web/.env
+./generate.sh
 cd bunny/cmd/web
-make watchexec
+yarn
+yarn watch # in one tab
+make watchexec # in another tab
 ```
 
 ### To Replace in the template
