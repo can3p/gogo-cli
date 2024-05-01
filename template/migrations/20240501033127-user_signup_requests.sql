@@ -12,6 +12,6 @@ CREATE TABLE user_signup_requests (
   updated_at timestamp
 );
 
-create unique index on user_signup_requests(email)
+create unique index on user_signup_requests(email);
 
 -- +migrate Down
