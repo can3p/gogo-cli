@@ -4,18 +4,18 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net"
 	"net/http/httputil"
+	"net/mail"
 	"os"
 	"runtime"
 	"strings"
 	"time"
 
-	"<projectrepo>/pkg/model/core"
+	"github.com/can3p/gogo/sender"
+	"{{ .ProjectRepo }}/pkg/model/core"
 	"github.com/gin-gonic/gin"
-	mailjet "github.com/mailjet/mailjet-apiv3-go/v3"
 )
 
 var (
@@ -25,9 +25,7 @@ var (
 	slash     = []byte("/")
 )
 
-func NotifyPageFailure(c *gin.Context, err any, user *core.User) {
-	mailjetClient := mailjet.NewMailjetClient(os.Getenv("MJ_APIKEY_PUBLIC"), os.Getenv("MJ_APIKEY_PRIVATE"))
-
+func NotifyPageFailure(c *gin.Context, s sender.Sender, err any, user *core.User) {
 	decodedStack := strings.Split(ClonedCustomRecovery(c, err), "\r\n")
 
 	var userInfo string = "Anonymous"
@@ -36,19 +34,18 @@ func NotifyPageFailure(c *gin.Context, err any, user *core.User) {
 		userInfo = fmt.Sprintf("email (%s), id (%s)", user.Email, user.ID)
 	}
 
-	messagesInfo := []mailjet.InfoMessagesV31{
-		{
-			From: &mailjet.RecipientV31{
-				Email: "<projectemail>",
-				Name:  "Your <projectname>",
+	mail := &sender.Mail{
+		From: mail.Address{
+			Address: "{{ .ProjectEmail }}",
+			Name:    "Your {{ .ProjectName }}",
+		},
+		To: []mail.Address{
+			{
+				Address: NotifyAddress,
 			},
-			To: &mailjet.RecipientsV31{
-				mailjet.RecipientV31{
-					Email: NotifyAddress,
-				},
-			},
-			Subject: "Panic on the page",
-			TextPart: fmt.Sprintf(`
+		},
+		Subject: "Panic on the page",
+		Text: fmt.Sprintf(`
 			Hi!
 
 			Panic on the page
@@ -58,7 +55,7 @@ func NotifyPageFailure(c *gin.Context, err any, user *core.User) {
 
 			%s
 			`, userInfo, strings.Join(decodedStack, "\r\n")),
-			HTMLPart: fmt.Sprintf(`
+		Html: fmt.Sprintf(`
 			<p>Hi!</p>
 
 			<p>Panic on the page:</p>
@@ -67,11 +64,9 @@ func NotifyPageFailure(c *gin.Context, err any, user *core.User) {
 			<li>user: %s</li>
 			<li>Request data: <br /><pre>%s</pre></li>
 			</ul>`, userInfo, strings.Join(decodedStack, "\r\n")),
-		},
 	}
 
-	messages := mailjet.MessagesV31{Info: messagesInfo}
-	res, err := mailjetClient.SendMailV31(&messages)
+	err = s.Send(c, mail)
 
 	if err != nil {
 		log.Fatal(err)
@@ -129,7 +124,7 @@ func stack(skip int) []byte {
 		// Print this much at least.  If we can't find the source, it won't show.
 		fmt.Fprintf(buf, "%s:%d (0x%x)\n", file, line, pc)
 		if file != lastFile {
-			data, err := ioutil.ReadFile(file)
+			data, err := os.ReadFile(file)
 			if err != nil {
 				continue
 			}

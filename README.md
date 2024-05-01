@@ -54,22 +54,27 @@ extract the binary into a folder that is mentioned in your `$PATH` variable.
 
 ## Usage
 
-TBD
-
-Something like this, let's say we want to create a `bunny` project:
+Let's say we want to create a `bunny` project:
 
 ```
 cd ~/code
-gogo generate project bunny
-# or: gogo generate project bunny --skip-deploy
-cd bunny/cmd/web
-make watchexec
+gogo-cli generate bunny --email 'your@email.com' --repo 'github.com/can3p/bunny' --testemail 'your@email.com' --out bunny
+echo "SESSION_SALT=random_string" >> bunny/cmd/web/.env
+echo "SITE_ROOT=http://localhost:8080" >> bunny/cmd/web/.env
+echo "DATABASE_URL=<insert your postgres connection string there>" >> bunny/cmd/web/.env
+cd bunny
+./sqlmigrate.sh up
+./generate.sh
+cd cmd/web
+yarn
+yarn watch # in one tab
+make watchexec # in another tab
 ```
 
 ### To Replace in the template
 
-* `<projectname>`
-* `<projectemail>`
-* `<projectrepo>`
-* `<testemailhead>` `john@mail.wat` is split into `john` and `mail.wat`
-* `<testemailtail>`
+* `{{ .ProjectName }}`
+* `{{ .ProjectEmail }}`
+* `{{ .ProjectRepo }}`
+* `{{ .TestemailHead }}` `john@mail.wat` is split into `john` and `mail.wat`
+* `{{ .TestemailTail }}`

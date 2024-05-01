@@ -1,29 +1,8 @@
 {{ template "header.html" . }}
 
-<div id="login">
-  <div class="uk-container uk-padding">
-    <div class="uk-margin-top uk-grid">
-      <div class="uk-width-1-2@m">
-        <h1 class="uk-heading-small uk-text-center"><projectname> works just fine!</h1>
-      </div>
-      <div class="uk-width-1-2@m">
-        <div class="uk-card uk-card-default uk-card-body">
-          <ul uk-tab>
-            <li><a href="#">Sign up</a></li>
-            <li><a href="#">Log in</a></li>
-          </ul>
-          <ul class="uk-switcher">
-            <li class="uk-active">
-              {{ template "form--signup.html" toMap "Attribution" "index_page" }}
-            </li>
-            <li>
-              <h3 class="uk-card-title">Login</h3>
-              {{ template "form--login.html" . }}
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div>
+<div class="p-3">
+  <div class="px-4 pt-5 my-5 text-center border-bottom">
+    <h1 class="display-4 fw-bold">{{ .ProjectName }} works just fine!</h1>
   </div>
 </div>
 

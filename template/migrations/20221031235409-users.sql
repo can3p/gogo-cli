@@ -5,7 +5,7 @@ create table users (
   email varchar not null,
   created_at timestamp default now(),
   updated_at timestamp default now(),
-  timezone varchar set not null,
+  timezone varchar not null,
   email_confirmed_at timestamp without time zone,
   email_confirm_seed uuid,
   signup_attribution varchar,

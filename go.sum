@@ -1,5 +1,17 @@
 aead.dev/minisign v0.2.0 h1:kAWrq/hBRu4AARY6AlciO83xhNnW9UaC8YipS2uhLPk=
 aead.dev/minisign v0.2.0/go.mod h1:zdq6LdSd9TbuSxchxwhpA9zEb9YXcVGoE8JakuiGaIQ=
+github.com/can3p/go-scarf v0.0.0-20240110163951-2d2faaed9fc4 h1:KrbvtDMtu9QA7Bb4bqEJzrGgfRUd3r1JaCy0CY3Ooa0=
+github.com/can3p/go-scarf v0.0.0-20240110163951-2d2faaed9fc4/go.mod h1:s9bLq1TjMr4F4iDXlF024F4qraB+djCfTadlfkC4veM=
+github.com/can3p/go-scarf v0.0.0-20240425152400-5164ded31b9d h1:vLP5gr+GeYF5Irdj/GDWuUL6ttwo7rnXgtByJgx4fn8=
+github.com/can3p/go-scarf v0.0.0-20240425152400-5164ded31b9d/go.mod h1:s9bLq1TjMr4F4iDXlF024F4qraB+djCfTadlfkC4veM=
+github.com/can3p/go-scarf v0.0.0-20240426000652-3038a638ab5a h1:m9OP4JfxPaO0qm/o+rvBEZnKNuWberYNKGnKLSav8bc=
+github.com/can3p/go-scarf v0.0.0-20240426000652-3038a638ab5a/go.mod h1:s9bLq1TjMr4F4iDXlF024F4qraB+djCfTadlfkC4veM=
+github.com/can3p/go-scarf v0.0.0-20240426011206-e2739632da8d h1:M+X9gUOo8joN3wAE0MBBlG5TL0HXt+gxsXhkqhjCY6A=
+github.com/can3p/go-scarf v0.0.0-20240426011206-e2739632da8d/go.mod h1:s9bLq1TjMr4F4iDXlF024F4qraB+djCfTadlfkC4veM=
+github.com/can3p/go-scarf v0.0.0-20240501104235-165dcb147b4c h1:es/X4zgzUkugvYQGWAtBuuiJhXiDv9l609jFVJ3x/II=
+github.com/can3p/go-scarf v0.0.0-20240501104235-165dcb147b4c/go.mod h1:s9bLq1TjMr4F4iDXlF024F4qraB+djCfTadlfkC4veM=
+github.com/can3p/go-scarf v0.0.0-20240501104927-634d80d41254 h1:1RZGX3Mp/tz8T5QKlgDHvB9cwFGuXDGNh+kUPp4Mx3Q=
+github.com/can3p/go-scarf v0.0.0-20240501104927-634d80d41254/go.mod h1:s9bLq1TjMr4F4iDXlF024F4qraB+djCfTadlfkC4veM=
 github.com/can3p/kleiner v0.0.8 h1:N3baa0NeN0v2cht0AIku/5k/mUbq9k/T81mj73Y7j2E=
 github.com/can3p/kleiner v0.0.8/go.mod h1:kwt/Exe3WzOccIe+u0WdZDdu6IwNSeob0ZlyoEoFUnM=
 github.com/cpuguy83/go-md2man/v2 v2.0.3/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
@@ -16,6 +28,8 @@ github.com/google/go-github/v57 v57.0.0 h1:L+Y3UPTY8ALM8x+TV0lg+IEBI+upibemtBD8Q
 github.com/google/go-github/v57 v57.0.0/go.mod h1:s0omdnye0hvK/ecLvpsGfJMiRt85PimQh4oygmLIxHw=
 github.com/google/go-querystring v1.1.0 h1:AnCroh3fv4ZBgVIf1Iwtovgjaw/GiKJo8M8yD/fhyJ8=
 github.com/google/go-querystring v1.1.0/go.mod h1:Kcdr2DB4koayq7X8pmAG4sNG59So17icRSOU623lUBU=
+github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
+github.com/google/uuid v1.6.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2s0bqwp9tc8=
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
 github.com/mattn/go-colorable v0.1.13 h1:fFA4WZxdEF4tXPZVKMLwD8oUnCTTo08duU7wxecdEvA=

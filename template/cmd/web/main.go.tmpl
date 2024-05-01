@@ -6,7 +6,6 @@ import (
 	"flag"
 	"fmt"
 	"html/template"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -14,20 +13,23 @@ import (
 	"time"
 	_ "time/tzdata" // help go learn about timezones
 
-	"<projectrepo>/pkg/admin"
-	"<projectrepo>/pkg/auth"
-	"<projectrepo>/pkg/forms"
-	"<projectrepo>/pkg/forms/validation"
-	"<projectrepo>/pkg/links"
-	"<projectrepo>/pkg/mail"
-	"<projectrepo>/pkg/markdown"
-	"<projectrepo>/pkg/model/core"
-	"<projectrepo>/pkg/pgsession"
-	"<projectrepo>/pkg/util"
-	"<projectrepo>/pkg/web"
+	gogoForms "github.com/can3p/gogo/forms"
+	"github.com/can3p/gogo/sender"
+	"github.com/can3p/gogo/sender/console"
+	"github.com/can3p/gogo/sender/mailjet"
+	"{{ .ProjectRepo }}/pkg/admin"
+	"{{ .ProjectRepo }}/pkg/auth"
+	"{{ .ProjectRepo }}/pkg/forms"
+	"{{ .ProjectRepo }}/pkg/links"
+	"{{ .ProjectRepo }}/pkg/markdown"
+	"{{ .ProjectRepo }}/pkg/model/core"
+	"{{ .ProjectRepo }}/pkg/pgsession"
+	"{{ .ProjectRepo }}/pkg/util"
+	"{{ .ProjectRepo }}/pkg/web"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
+	_ "github.com/joho/godotenv/autoload"
 	_ "github.com/lib/pq" // postgres db driver
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
@@ -35,18 +37,13 @@ import (
 
 var staticRoute = "/static"
 
-// replace with cdn domain
-var staticRouteCluster = "/static"
-
 var requiredVars = []string{
 	"DATABASE_URL",
 	"SESSION_SALT",
-	"MJ_APIKEY_PRIVATE",
-	"MJ_APIKEY_PUBLIC",
 	"SITE_ROOT",
 }
 
-func enforceEnvVars() {
+func enforceEnvVars(requiredVars []string) {
 	for _, v := range requiredVars {
 		if _, ok := os.LookupEnv(v); !ok {
 			panic(fmt.Sprintf("var %s is not set", v))
@@ -55,11 +52,32 @@ func enforceEnvVars() {
 }
 
 func main() {
-	enforceEnvVars()
+	var forceOpenRegistation bool
+	var forceRealSender bool
+
+	flag.BoolVar(&forceOpenRegistation, "force-signup", false, "allow new signups even if it's disabled in system settings")
+	flag.BoolVar(&forceRealSender, "force-real-sender", false, "force real sender outside of cluster")
+
+	flag.Parse()
+
+	shouldUseRealSender := util.InCluster() || forceRealSender
+
+	enforceEnvVars(requiredVars)
+	if shouldUseRealSender {
+		enforceEnvVars(mailjet.RequiredEnv)
+	}
 
 	// fly.io does not have sslmode enabled
 	db := sqlx.MustConnect("postgres", os.Getenv("DATABASE_URL"))
 	defer db.Close()
+
+	var sender sender.Sender
+
+	if shouldUseRealSender {
+		sender = mailjet.NewSender()
+	} else {
+		sender = console.NewSender()
+	}
 
 	sessionSalt := os.Getenv("SESSION_SALT")
 
@@ -78,7 +96,7 @@ func main() {
 			userData := auth.GetUserData(c)
 			user := userData.DBUser
 
-			admin.NotifyPageFailure(c, err, user)
+			admin.NotifyPageFailure(c, sender, err, user)
 		}))
 	} else {
 		log.Println("Custom error reporter skipped")
@@ -112,12 +130,37 @@ func main() {
 		r.Group("/static").Static("/", "dist")
 	}
 
+	r.GET("/invite/:id", func(c *gin.Context) {
+		invitationID := c.Param("id")
+
+		userData := auth.GetUserData(c)
+
+		if userData.IsLoggedIn {
+			c.Redirect(http.StatusFound, "/controls")
+			return
+		}
+
+		invite, err := core.UserInvitations(
+			core.UserInvitationWhere.ID.EQ(invitationID),
+			core.UserInvitationWhere.CreatedUserID.IsNull(),
+		).One(c, db)
+
+		if err == sql.ErrNoRows {
+			c.AbortWithStatus(http.StatusNotFound)
+			return
+		} else if err != nil {
+			panic(err)
+		}
+
+		c.HTML(http.StatusOK, "invite.html", web.Invite(c, db, invite, &userData))
+	})
+
 	r.GET("/articles/:id", func(c *gin.Context) {
 		articleName := c.Param("id")
 
 		fname := fmt.Sprintf("client/articles/%s.md", articleName)
 
-		body, err := ioutil.ReadFile((fname))
+		body, err := os.ReadFile((fname))
 
 		if err != nil {
 			panic(err)
@@ -138,115 +181,73 @@ func main() {
 		})
 	})
 
-	r.POST("/form/signup", func(c *gin.Context) {
-		var input struct {
-			Email       string `form:"email" binding:"required"`
-			Password    string `form:"password" binding:"required"`
-			Attribution string `form:"attribution"`
+	r.GET("/login", func(c *gin.Context) {
+		userData := auth.GetUserData(c)
+
+		if userData.IsLoggedIn {
+			c.Redirect(http.StatusFound, "/controls")
+			return
 		}
 
-		if err := c.ShouldBind(&input); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"explanation": "Failed to process request", "err": err.Error()})
+		c.HTML(http.StatusOK, "login.html", gin.H{
+			"Name": "Login to Webhks",
+			"User": userData,
+		})
+	})
+
+	r.GET("/signup", func(c *gin.Context) {
+		attribution := c.Query("attribution")
+		userData := auth.GetUserData(c)
+
+		if userData.IsLoggedIn {
+			c.Redirect(http.StatusFound, "/controls")
 			return
 		}
 
 		systemSettings := core.SystemSettings().OneP(c, db)
 
-		if !systemSettings.RegistrationOpen {
-			c.Status(http.StatusForbidden)
-			return
-		}
+		registrationOpen := systemSettings.RegistrationOpen || forceOpenRegistation
 
-		errors := map[string]string{}
-		hasErrors := false
-
-		email := strings.TrimSpace(strings.ToLower(input.Email))
-
-		if email == "" {
-			errors["email"] = "This email cannot be empty"
-			hasErrors = true
-		} else if reason, isOK := web.EmailOKToSignup(c, db, input.Email); !isOK {
-			errors["email"] = reason
-			hasErrors = true
-		}
-
-		if err := validation.ValidatePassword(input.Password); err != nil {
-			errors["password"] = err.Error()
-			hasErrors = true
-		}
-
-		if hasErrors {
-			c.HTML(http.StatusOK, "form--signup.html", map[string]interface{}{
-				"Errors": errors,
-				"Input":  input,
-			})
-			return
-		}
-
-		attribution := input.Attribution
-
-		// we're not enforcing a specific enum of attributions
-		// since it's just additional work at the moment
-		if !web.AttributionRE.MatchString(attribution) {
-			attribution = "unknown"
-		}
-
-		if len(attribution) > 100 {
-			attribution = attribution[0:100]
-		}
-
-		// we're getting the input from the form and not
-		if len(attribution) > 100 {
-			attribution = attribution[0:100]
-		}
-
-		user, err := auth.Signup(c, db, email, input.Password, attribution)
-
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"explanation": "Failed to sign up", "err": err.Error()})
-			return
-		}
-
-		if err := mail.ConfirmSignup(db, user); err != nil {
-			panic(err)
-		}
-
-		c.HTML(http.StatusOK, "partial--signup-goto-email.html", map[string]interface{}{})
-	})
-
-	r.POST("/login", func(c *gin.Context) {
-		var input struct {
-			Email    string `form:"email" binding:"required"`
-			Password string `form:"password" binding:"required"`
-		}
-
-		if err := c.ShouldBind(&input); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"explanation": "Failed to process request", "err": err.Error()})
-			return
-		}
-
-		errors := map[string]string{}
-		hasErrors := false
-
-		if err := auth.Login(c, db, input.Email, input.Password); err != nil {
-			errors["email"] = fmt.Sprintf("Failed to login: %v", err)
-			hasErrors = true
-		}
-
-		if hasErrors {
-			c.HTML(http.StatusOK, "form--login.html", map[string]interface{}{
-				"Errors": errors,
-				"Input":  input,
-			})
-			return
-		}
-
-		// needs for htmx redirect
-		c.Header("HX-Redirect", "/controls/")
-		c.Status(http.StatusOK)
+		c.HTML(http.StatusOK, "signup.html", gin.H{
+			"Name":             "Signup to Webhks",
+			"User":             userData,
+			"RegistrationOpen": registrationOpen,
+			"Attribution":      attribution,
+		})
 	})
 
 	r.GET("/logout", auth.Logout)
+
+	r.GET("/confirm_waiting_list/:id", func(c *gin.Context) {
+		id := c.Param("id")
+		userData := auth.GetUserData(c)
+
+		if userData.IsLoggedIn {
+			c.Redirect(http.StatusFound, "/controls")
+		}
+
+		waitingList, err := core.UserSignupRequests(
+			core.UserSignupRequestWhere.ID.EQ(id),
+		).One(c, db)
+
+		if err != nil {
+			if err == sql.ErrNoRows {
+				c.AbortWithStatus(http.StatusNotFound)
+				return
+			}
+
+			panic(err)
+		}
+
+		if !waitingList.EmailConfirmedAt.Valid {
+			waitingList.EmailConfirmedAt = null.TimeFrom(time.Now())
+			waitingList.UpdateP(c, db, boil.Infer())
+		}
+
+		c.HTML(http.StatusOK, "waiting_list_confirmed.html", map[string]interface{}{
+			"User": userData,
+		})
+	})
 
 	controls := r.Group("/controls", auth.EnforceAuth)
 	actions := controls.Group("/action")
@@ -290,12 +291,93 @@ func main() {
 			user.EmailConfirmedAt = null.TimeFrom(time.Now())
 			user.UpdateP(c, db, boil.Infer())
 
-			go admin.NotifySignupConfirmed(user)
+			go admin.NotifySignupConfirmed(c, sender, user)
 		}
 
 		c.HTML(http.StatusOK, "signup_confirmed.html", map[string]interface{}{
 			"User": userData,
 		})
+	})
+
+	r.POST("/form/login", func(c *gin.Context) {
+		userData := auth.GetUserData(c)
+
+		if userData.IsLoggedIn {
+			c.Redirect(http.StatusFound, "/controls")
+		}
+
+		form := forms.LoginFormNew()
+
+		gogoForms.DefaultHandler(c, db, form)
+	})
+
+	r.POST("/form/accept_invite/:id", func(c *gin.Context) {
+		invitationID := c.Param("id")
+
+		invite, err := core.UserInvitations(
+			core.UserInvitationWhere.ID.EQ(invitationID),
+			core.UserInvitationWhere.CreatedUserID.IsNull(),
+		).One(c, db)
+
+		if err == sql.ErrNoRows {
+			c.AbortWithStatus(http.StatusNotFound)
+			return
+		} else if err != nil {
+			panic(err)
+		}
+
+		form := forms.AcceptInviteFormNew(sender, invite)
+		gogoForms.DefaultHandler(c, db, form)
+	})
+
+	r.POST("/form/signup", func(c *gin.Context) {
+		userData := auth.GetUserData(c)
+
+		if userData.IsLoggedIn {
+			c.Redirect(http.StatusFound, "/controls")
+		}
+
+		systemSettings := core.SystemSettings().OneP(c, db)
+
+		registrationOpen := systemSettings.RegistrationOpen || forceOpenRegistation
+
+		if !registrationOpen {
+			c.Status(http.StatusForbidden)
+			return
+		}
+		form := forms.SignupFormNew(sender)
+
+		gogoForms.DefaultHandler(c, db, form)
+	})
+
+	r.POST("/form/signup_waiting_list", func(c *gin.Context) {
+		userData := auth.GetUserData(c)
+
+		if userData.IsLoggedIn {
+			c.Redirect(http.StatusFound, "/controls")
+		}
+
+		systemSettings := core.SystemSettings().OneP(c, db)
+
+		registrationOpen := systemSettings.RegistrationOpen || forceOpenRegistation
+
+		if registrationOpen {
+			c.Status(http.StatusForbidden)
+			return
+		}
+
+		form := forms.SignupWaitingListFormNew(sender)
+
+		gogoForms.DefaultHandler(c, db, form)
+	})
+
+	controls.POST("/form/send_invite", func(c *gin.Context) {
+		userData := auth.GetUserData(c)
+		dbUser := userData.DBUser
+
+		form := forms.SendInviteFormNew(sender, dbUser)
+
+		gogoForms.DefaultHandler(c, db, form)
 	})
 
 	controls.POST("/form/save_settings", func(c *gin.Context) {
@@ -304,7 +386,7 @@ func main() {
 
 		form := forms.SettingsGeneralFormNew(dbUser)
 
-		forms.DefaultHandler(c, db, form)
+		gogoForms.DefaultHandler(c, db, form)
 	})
 
 	controls.POST("/form/change_password", func(c *gin.Context) {
@@ -313,7 +395,7 @@ func main() {
 
 		form := forms.ChangePasswordFormNew(dbUser)
 
-		forms.DefaultHandler(c, db, form)
+		gogoForms.DefaultHandler(c, db, form)
 	})
 
 	if err := r.Run(); err != nil {
@@ -324,7 +406,7 @@ func main() {
 func funcmap() template.FuncMap {
 	return template.FuncMap{
 		"static_asset": func() func(n string) string {
-			manifest, err := ioutil.ReadFile("dist/manifest.json")
+			manifest, err := os.ReadFile("dist/manifest.json")
 
 			if err != nil {
 				panic(err)

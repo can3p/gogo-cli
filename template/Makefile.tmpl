@@ -1,0 +1,5 @@
+shell:
+	flyctl postgres connect -a {{ .ProjectName }}db
+
+tunnel:
+	flyctl proxy 5432 -a {{ .ProjectName }}db
