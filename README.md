@@ -62,8 +62,9 @@ gogo-cli generate bunny --email 'your@email.com' --repo 'github.com/can3p/bunny'
 echo "SESSION_SALT=random_string" >> bunny/cmd/web/.env
 echo "SITE_ROOT=http://localhost:8080" >> bunny/cmd/web/.env
 echo "DATABASE_URL=<insert your postgres connection string there>" >> bunny/cmd/web/.env
+cd bunny
 ./generate.sh
-cd bunny/cmd/web
+cd cmd/web
 yarn
 yarn watch # in one tab
 make watchexec # in another tab

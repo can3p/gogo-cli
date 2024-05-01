@@ -23,6 +23,18 @@
 14. Add required txt record to validate domain
 15. Add required txt records to add DKIM and SPF settings
 16. Add postgres db env var to `cmd/web/.env` via `./env.pl > cmd/web/.env`, remove `sslMode=disable` and replace domain name with localhost
-17. Move `pkg` folder back
-18. Run `./generate.sh` to get model files
-19. Work till you get the landing and login working
+18. Run the following from the project root to get the database schema in place and generate orm files
+
+```
+./sqlmigrate.sh
+./generate.sh
+```
+
+19. To run the project do the following:
+
+```
+cd cmd/web
+yarn
+yarn watch # in one tab
+make watchexec # in another tab
+```
