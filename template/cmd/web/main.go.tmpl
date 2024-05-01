@@ -218,6 +218,37 @@ func main() {
 
 	r.GET("/logout", auth.Logout)
 
+	r.GET("/confirm_waiting_list/:id", func(c *gin.Context) {
+		id := c.Param("id")
+		userData := auth.GetUserData(c)
+
+		if userData.IsLoggedIn {
+			c.Redirect(http.StatusFound, "/controls")
+		}
+
+		waitingList, err := core.UserSignupRequests(
+			core.UserSignupRequestWhere.ID.EQ(id),
+		).One(c, db)
+
+		if err != nil {
+			if err == sql.ErrNoRows {
+				c.AbortWithStatus(http.StatusNotFound)
+				return
+			}
+
+			panic(err)
+		}
+
+		if !waitingList.EmailConfirmedAt.Valid {
+			waitingList.EmailConfirmedAt = null.TimeFrom(time.Now())
+			waitingList.UpdateP(c, db, boil.Infer())
+		}
+
+		c.HTML(http.StatusOK, "waiting_list_confirmed.html", map[string]interface{}{
+			"User": userData,
+		})
+	})
+
 	controls := r.Group("/controls", auth.EnforceAuth)
 	actions := controls.Group("/action")
 
@@ -314,8 +345,28 @@ func main() {
 			c.Status(http.StatusForbidden)
 			return
 		}
-
 		form := forms.SignupFormNew(sender)
+
+		gogoForms.DefaultHandler(c, db, form)
+	})
+
+	r.POST("/form/signup_waiting_list", func(c *gin.Context) {
+		userData := auth.GetUserData(c)
+
+		if userData.IsLoggedIn {
+			c.Redirect(http.StatusFound, "/controls")
+		}
+
+		systemSettings := core.SystemSettings().OneP(c, db)
+
+		registrationOpen := systemSettings.RegistrationOpen || forceOpenRegistation
+
+		if registrationOpen {
+			c.Status(http.StatusForbidden)
+			return
+		}
+
+		form := forms.SignupWaitingListFormNew(sender)
 
 		gogoForms.DefaultHandler(c, db, form)
 	})

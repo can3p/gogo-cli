@@ -20,7 +20,7 @@
   </div>
   <div class="mb-3">
     <label for="waitingListReason" class="form-label">Any message to the service authors!</label>
-    <textarea class="form-control" name="reason" placeholder=""></textarea>
+    <textarea class="form-control" name="reason" placeholder="">{{ if .Input }}{{ .Input.Reason }}{{ end }}</textarea>
   </div>
   <button type="submit" class="btn btn-primary w-100">Join</button>
 
