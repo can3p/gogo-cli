@@ -85,7 +85,7 @@ func generateCommand() *cobra.Command {
 			}).WithFuncMap(map[string]any{
 				"uuid": func() string {
 					return uuid.NewString()
-				}})
+				}}).WithPermSetter(scaffolder.ExecutablePermSetter(".sh", ".pl"))
 
 			if !test {
 				s = s.WithProcessor(scaffolder.FSProcessor(out))

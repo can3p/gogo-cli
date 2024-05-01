@@ -63,7 +63,6 @@ echo "SESSION_SALT=random_string" >> bunny/cmd/web/.env
 echo "SITE_ROOT=http://localhost:8080" >> bunny/cmd/web/.env
 echo "DATABASE_URL=<insert your postgres connection string there>" >> bunny/cmd/web/.env
 cd bunny
-chmod +x sqlmigrate.sh generate.sh run.sh env.pl
 ./sqlmigrate.sh up
 ./generate.sh
 cd cmd/web
