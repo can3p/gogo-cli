@@ -54,15 +54,15 @@ extract the binary into a folder that is mentioned in your `$PATH` variable.
 
 ## Usage
 
-Let's say we want to create a `bunny` project:
+Let's say we want to create a [`gogo-cli-example`](https://github.com/can3p/gogo-cli-example) project:
 
 ```
 cd ~/code
-gogo-cli generate bunny --email 'your@email.com' --repo 'github.com/can3p/bunny' --testemail 'your@email.com' --out bunny
-echo "SESSION_SALT=random_string" >> bunny/cmd/web/.env
-echo "SITE_ROOT=http://localhost:8080" >> bunny/cmd/web/.env
-echo "DATABASE_URL=<insert your postgres connection string there>" >> bunny/cmd/web/.env
-cd bunny
+gogo-cli generate gogo-cli-example --email 'your@email.com' --repo 'github.com/can3p/gogo-cli-example' --testemail 'your@email.com' --out gogo-cli-example
+echo "SESSION_SALT=random_string" >> gogo-cli-example/cmd/web/.env
+echo "SITE_ROOT=http://localhost:8080" >> gogo-cli-example/cmd/web/.env
+echo "DATABASE_URL=<insert your postgres connection string there>" >> gogo-cli-example/cmd/web/.env
+cd gogo-cli-example
 ./sqlmigrate.sh up
 ./generate.sh
 cd cmd/web
