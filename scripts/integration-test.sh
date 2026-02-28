@@ -48,7 +48,11 @@ cleanup() {
     if [ "$SKIP_POSTGRES_CONTAINER" = "false" ]; then
         docker rm -f "$CONTAINER_NAME" 2>/dev/null || true
     fi
-    rm -rf "$TEST_PROJECT_DIR"
+    # Files created by docker (sqlboiler) may be owned by root, use docker to clean them
+    if [ -d "$TEST_PROJECT_DIR" ]; then
+        docker run --rm -v "$TEST_PROJECT_DIR":/workspace alpine rm -rf /workspace/* 2>/dev/null || rm -rf "$TEST_PROJECT_DIR" 2>/dev/null || true
+        rmdir "$TEST_PROJECT_DIR" 2>/dev/null || true
+    fi
 }
 
 trap cleanup EXIT
