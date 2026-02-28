@@ -1,0 +1,8 @@
+[database]
+migrations = "migrations"
+
+[database.sqlboiler]
+pkgname = "models"
+output = "pkg/models"
+wipe = true
+blacklist = ["migrations"]

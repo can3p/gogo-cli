@@ -11,14 +11,7 @@ strategy.
 `gogo` cli won't let you generate a new project if you don't have all the tools
 installed. Current requirements are:
 
-- `sqlmigrate` - `go install github.com/rubenv/sql-migrate/...@latest`
-- `sqlboiler@v4`:
-
-  ```
-  go install github.com/volatiletech/sqlboiler/v4@latest
-  go install github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-psql@latest
-  ```
-
+- **Docker** - Required for `db generate` command (runs sqlboiler in a container)
 - `watchexec` [site](https://github.com/watchexec/watchexec)
 - `flyctl` [docs](https://fly.io/docs/hands-on/install-flyctl/)
 
@@ -64,7 +57,7 @@ echo "SITE_ROOT=http://localhost:8080" >> gogo-cli-example/cmd/web/.env
 echo "DATABASE_URL=<insert your postgres connection string there>" >> gogo-cli-example/cmd/web/.env
 cd gogo-cli-example
 ./sqlmigrate.sh up
-./generate.sh
+gogo-cli db generate
 cd cmd/web
 yarn
 yarn watch # in one tab
@@ -78,3 +71,41 @@ make watchexec # in another tab
 * `{{ .ProjectRepo }}`
 * `{{ .TestemailHead }}` `john@mail.wat` is split into `john` and `mail.wat`
 * `{{ .TestemailTail }}`
+
+## Database Commands
+
+### `gogo-cli db generate`
+
+Generates SQLBoiler ORM code from your database schema. This command:
+
+1. Starts a PostgreSQL container using Docker
+2. Applies all migrations from a clean state
+3. Runs sqlboiler to generate Go code
+4. Cleans up the container
+
+**Requirements:**
+- Docker must be running
+- A `gogo.toml` configuration file in your project root
+
+**Configuration (`gogo.toml`):**
+
+```toml
+[database]
+migrations = "migrations"
+
+[database.sqlboiler]
+pkgname = "core"
+output = "pkg/model/core"
+wipe = true
+blacklist = ["migrations", "http_sessions"]
+```
+
+**Usage:**
+
+```bash
+# From project root
+gogo-cli db generate
+
+# Or specify a different directory
+gogo-cli db generate --dir /path/to/project
+```
