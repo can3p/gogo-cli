@@ -38,100 +38,16 @@ jobs:
           go-version-file: go.mod
           cache: true
 
-      - name: Build gogo-cli
-        run: go build -o gogo-cli .
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
-      - name: Generate test project
-        run: |
-          mkdir -p /tmp/testproject
-          ./gogo-cli generate testapp \
-            --email="test@example.com" \
-            --repo="github.com/test/testapp" \
-            --testemail="test@example.com" \
-            --out=/tmp/testproject
-
-      - name: Install sql-migrate
-        run: go install github.com/rubenv/sql-migrate/...@latest
-
-      - name: Run migrations
-        working-directory: /tmp/testproject
+      - name: Run integration test
         env:
           POSTGRES_HOST: localhost
           POSTGRES_PORT: 5432
           POSTGRES_DB: testdb
           POSTGRES_USER: testuser
           POSTGRES_PASSWORD: testpass
-        run: sql-migrate up -env=development
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install frontend dependencies and build
-        working-directory: /tmp/testproject/cmd/web
-        run: |
-          yarn install
-          yarn build
-
-      - name: Download Go dependencies
-        working-directory: /tmp/testproject
-        run: go mod download
-
-      - name: Find available port
-        id: port
-        run: |
-          # Find first available port starting from 8080
-          for port in $(seq 8080 8180); do
-            if ! ss -tuln | grep -q ":$port "; then
-              echo "port=$port" >> $GITHUB_OUTPUT
-              echo "Found available port: $port"
-              break
-            fi
-          done
-
-      - name: Start application
-        working-directory: /tmp/testproject/cmd/web
-        env:
-          DATABASE_URL: postgres://testuser:testpass@localhost:5432/testdb?sslmode=disable
-          SESSION_SALT: testsalt12345678
-          SITE_ROOT: http://localhost:${{ steps.port.outputs.port }}
-          GIN_MODE: release
-          PORT: ${{ steps.port.outputs.port }}
-        run: |
-          go run . &
-          echo $! > /tmp/app.pid
-          # Wait for app to start
-          for i in {1..30}; do
-            if curl -s http://localhost:${{ steps.port.outputs.port }} > /dev/null 2>&1; then
-              echo "App started successfully on port ${{ steps.port.outputs.port }}"
-              break
-            fi
-            echo "Waiting for app to start... ($i/30)"
-            sleep 1
-          done
-
-      - name: Test application health
-        run: |
-          response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:${{ steps.port.outputs.port }})
-          if [ "$response" != "200" ]; then
-            echo "Health check failed with status: $response"
-            exit 1
-          fi
-          echo "Health check passed with status: $response"
-
-      - name: Test login page
-        run: |
-          response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:${{ steps.port.outputs.port }}/login)
-          if [ "$response" != "200" ]; then
-            echo "Login page check failed with status: $response"
-            exit 1
-          fi
-          echo "Login page check passed with status: $response"
-
-      - name: Cleanup
-        if: always()
-        run: |
-          if [ -f /tmp/app.pid ]; then
-            kill $(cat /tmp/app.pid) 2>/dev/null || true
-          fi
+        run: ./scripts/integration-test.sh
