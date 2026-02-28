@@ -1,15 +1,5 @@
 aead.dev/minisign v0.2.0 h1:kAWrq/hBRu4AARY6AlciO83xhNnW9UaC8YipS2uhLPk=
 aead.dev/minisign v0.2.0/go.mod h1:zdq6LdSd9TbuSxchxwhpA9zEb9YXcVGoE8JakuiGaIQ=
-github.com/can3p/go-scarf v0.0.0-20240110163951-2d2faaed9fc4 h1:KrbvtDMtu9QA7Bb4bqEJzrGgfRUd3r1JaCy0CY3Ooa0=
-github.com/can3p/go-scarf v0.0.0-20240110163951-2d2faaed9fc4/go.mod h1:s9bLq1TjMr4F4iDXlF024F4qraB+djCfTadlfkC4veM=
-github.com/can3p/go-scarf v0.0.0-20240425152400-5164ded31b9d h1:vLP5gr+GeYF5Irdj/GDWuUL6ttwo7rnXgtByJgx4fn8=
-github.com/can3p/go-scarf v0.0.0-20240425152400-5164ded31b9d/go.mod h1:s9bLq1TjMr4F4iDXlF024F4qraB+djCfTadlfkC4veM=
-github.com/can3p/go-scarf v0.0.0-20240426000652-3038a638ab5a h1:m9OP4JfxPaO0qm/o+rvBEZnKNuWberYNKGnKLSav8bc=
-github.com/can3p/go-scarf v0.0.0-20240426000652-3038a638ab5a/go.mod h1:s9bLq1TjMr4F4iDXlF024F4qraB+djCfTadlfkC4veM=
-github.com/can3p/go-scarf v0.0.0-20240426011206-e2739632da8d h1:M+X9gUOo8joN3wAE0MBBlG5TL0HXt+gxsXhkqhjCY6A=
-github.com/can3p/go-scarf v0.0.0-20240426011206-e2739632da8d/go.mod h1:s9bLq1TjMr4F4iDXlF024F4qraB+djCfTadlfkC4veM=
-github.com/can3p/go-scarf v0.0.0-20240501104235-165dcb147b4c h1:es/X4zgzUkugvYQGWAtBuuiJhXiDv9l609jFVJ3x/II=
-github.com/can3p/go-scarf v0.0.0-20240501104235-165dcb147b4c/go.mod h1:s9bLq1TjMr4F4iDXlF024F4qraB+djCfTadlfkC4veM=
 github.com/can3p/go-scarf v0.0.0-20240501104927-634d80d41254 h1:1RZGX3Mp/tz8T5QKlgDHvB9cwFGuXDGNh+kUPp4Mx3Q=
 github.com/can3p/go-scarf v0.0.0-20240501104927-634d80d41254/go.mod h1:s9bLq1TjMr4F4iDXlF024F4qraB+djCfTadlfkC4veM=
 github.com/can3p/kleiner v0.0.8 h1:N3baa0NeN0v2cht0AIku/5k/mUbq9k/T81mj73Y7j2E=

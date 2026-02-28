@@ -9,7 +9,7 @@ CREATE TABLE user_signup_requests (
   verification_sent_at timestamp,
   email_confirmed_at timestamp,
   created_at timestamp not null,
-  updated_at timestamp not null,
+  updated_at timestamp not null
 );
 
 create unique index on user_signup_requests(email);
