@@ -1,6 +1,6 @@
 module github.com/can3p/gogo-cli
 
-go 1.21.0
+go 1.26.0
 
 require (
 	github.com/can3p/kleiner v0.0.8
